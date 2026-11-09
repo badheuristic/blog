@@ -1,0 +1,169 @@
+---
+import '@fontsource/iosevka/latin-400.css'
+import '@fontsource/iosevka/latin-400-italic.css'
+import '../styles/fonts.css'
+import '../styles/tokens.css'
+import '../styles/global.css'
+import Backdrop from '../components/Backdrop.astro'
+import Cursor from '../components/Cursor.astro'
+import Header from '../components/Header.astro'
+import Particles from '../components/Particles.astro'
+import { config } from '../config'
+
+interface Props {
+  title?: string
+  description?: string
+  /** The faint word behind the content. */
+  backdrop?: string
+  /** A post or diary entry, for link previews. */
+  article?: boolean
+}
+
+const { title, description = config.description, backdrop = config.title, article = false } = Astro.props
+const pageTitle = title ? `${title} · ch{✱}` : `${config.title} · ch{✱}`
+const canonical = new URL(Astro.url.pathname, Astro.site)
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" type="application/rss+xml" title="posts" href="/rss.xml" />
+    <link rel="alternate" type="application/rss+xml" title="diary" href="/diary/rss.xml" />
+    <meta property="og:title" content={title ?? config.title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content={article ? 'article' : 'website'} />
+    <script is:inline>
+      // Set the theme before first paint so there is no flash of the wrong one.
+      // Must match the storage key and logic in src/lib/theme.ts.
+      ;(function () {
+        var theme
+        try {
+          theme = localStorage.getItem('theme')
+        } catch (e) {}
+        if (theme !== 'light' && theme !== 'dark') {
+          theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        }
+        document.documentElement.dataset.theme = theme
+      })()
+    </script>
+    <script is:inline>
+      // Page changes within the blog: the new page shows through a grid of squares that
+      // grow from where the link was clicked (the theme dissolve's motif, quicker). A
+      // cross-document view transition, so it has to be set up here, before the first
+      // frame. Browsers without them just navigate. Kept apart from lib/themeDissolve.ts
+      // because that one can't load this early; change both together.
+      ;(function () {
+        var KEY = 'blog:pointer' // must match src/lib/pointer.ts
+        var CELL = 72
+        var FLIP = 0.22
+        var SPREAD = 0.35
+
+        // Remember where a link was clicked, for the next page's reveal and cursor.
+        document.addEventListener(
+          'click',
+          function (e) {
+            if (!e.target.closest || !e.target.closest('a[href]')) return
+            try {
+              if (e.detail === 0) sessionStorage.removeItem(KEY)
+              else sessionStorage.setItem(KEY, JSON.stringify({ x: e.clientX, y: e.clientY, t: Date.now() }))
+            } catch (err) {}
+          },
+          true,
+        )
+
+        window.addEventListener('pagereveal', function (e) {
+          var transition = e.viewTransition
+          if (!transition) return
+          if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            transition.skipTransition()
+            return
+          }
+
+          var from = null
+          try {
+            from = JSON.parse(sessionStorage.getItem(KEY) || 'null')
+          } catch (err) {}
+          var fresh = from && Date.now() - from.t < 5000
+          var x = fresh ? from.x : innerWidth / 2
+          var y = fresh ? from.y : innerHeight / 2
+
+          var total = SPREAD + FLIP
+          var base =
+            '::view-transition-old(root){mix-blend-mode:normal;animation:none}' +
+            '::view-transition-new(root){mix-blend-mode:normal;animation:page-tiles-hold ' + total + 's linear both}' +
+            '@keyframes page-tiles-hold{to{opacity:1}}'
+          var hidden = '::view-transition-new(root){visibility:hidden}'
+          var style = document.createElement('style')
+          style.textContent = base + hidden
+          document.head.append(style)
+          var frame = 0
+
+          transition.ready.then(function () {
+            var w = innerWidth
+            var h = innerHeight
+            var cols = Math.ceil(w / CELL)
+            var rows = Math.ceil(h / CELL)
+            var far = Math.max(Math.hypot(x, y), Math.hypot(w - x, y), Math.hypot(x, h - y), Math.hypot(w - x, h - y))
+            var start = performance.now()
+            var draw = function () {
+              var t = (performance.now() - start) / 1000
+              var path = ''
+              for (var row = 0; row < rows; row++) {
+                for (var col = 0; col < cols; col++) {
+                  var cx = col * CELL + CELL / 2
+                  var cy = row * CELL + CELL / 2
+                  var delay = (Math.hypot(cx - x, cy - y) / far) * SPREAD
+                  var p = Math.min(Math.max((t - delay) / FLIP, 0), 1)
+                  if (p <= 0) continue
+                  var size = Math.min(CELL + 1, (CELL + 4) * (1 - (1 - p) * (1 - p)))
+                  path += 'M' + (cx - size / 2) + ' ' + (cy - size / 2) + 'h' + size + 'v' + size + 'h' + -size + 'Z'
+                }
+              }
+              style.textContent = base + (path ? '::view-transition-new(root){clip-path:path("' + path + '")}' : hidden)
+              if (t < total) frame = requestAnimationFrame(draw)
+            }
+            draw()
+          })
+
+          transition.finished.finally(function () {
+            cancelAnimationFrame(frame)
+            style.remove()
+          })
+        })
+      })()
+    </script>
+  </head>
+  <body>
+    <Particles />
+    <Backdrop text={backdrop} />
+    <Header />
+    <main class="main">
+      <slot />
+    </main>
+    <Cursor />
+  </body>
+</html>
+
+<style>
+  /* Content keeps to the main site's center-right column; the left is the backdrop's. */
+  .main {
+    position: relative;
+    z-index: var(--z-content);
+    margin-left: var(--col-start);
+    width: calc(var(--col-end) - var(--col-start));
+    padding-block: calc(var(--gutter) * 2 + 4rem) calc(var(--gutter) + 6rem);
+  }
+
+  @media (max-width: 1023px), (max-height: 500px) {
+    .main {
+      padding-bottom: calc(var(--gutter) + var(--zone-title-h));
+    }
+  }
+</style>

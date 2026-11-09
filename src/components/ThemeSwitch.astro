@@ -1,0 +1,72 @@
+---
+// `light / dark`, current theme at full contrast. Switching runs the square-tile dissolve
+// from the main site (lib/themeDissolve.ts).
+---
+
+<div class="switch" role="group" aria-label="Color theme" data-theme-switch>
+  <button type="button" class="option" data-option="light" aria-pressed="false">light</button>
+  <span class="divider" aria-hidden="true">/</span>
+  <button type="button" class="option" data-option="dark" aria-pressed="false">dark</button>
+</div>
+
+<script>
+  import { dissolveTheme } from '../lib/themeDissolve'
+  import { currentTheme, followSystemTheme, setTheme, type Theme } from '../lib/theme'
+
+  const root = document.querySelector<HTMLElement>('[data-theme-switch]')!
+  const buttons = [...root.querySelectorAll<HTMLButtonElement>('[data-option]')]
+
+  const sync = () => {
+    const theme = currentTheme()
+    for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.option === theme))
+  }
+
+  for (const button of buttons) {
+    button.addEventListener('click', (e) => {
+      const option = button.dataset.option as Theme
+      if (option === currentTheme()) return
+      const rect = button.getBoundingClientRect()
+      // From the click, or the button's center from the keyboard.
+      const fromPointer = e.detail > 0
+      dissolveTheme(
+        () => {
+          setTheme(option)
+          sync()
+        },
+        fromPointer ? e.clientX : rect.left + rect.width / 2,
+        fromPointer ? e.clientY : rect.top + rect.height / 2,
+      )
+    })
+  }
+
+  sync()
+  followSystemTheme(sync)
+</script>
+
+<style>
+  .switch {
+    display: flex;
+    align-items: baseline;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-regular);
+  }
+
+  .divider {
+    padding-inline: 0.35em;
+    color: var(--fg-faint);
+  }
+
+  .option {
+    color: var(--fg-muted);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .option:hover,
+  .option[aria-pressed='true'] {
+    color: var(--fg);
+  }
+
+  .option[aria-pressed='true'] {
+    cursor: default;
+  }
+</style>

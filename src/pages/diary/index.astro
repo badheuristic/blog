@@ -1,0 +1,9 @@
+---
+import EntryList from '../../components/EntryList.astro'
+import Base from '../../layouts/Base.astro'
+import { sections } from '../../lib/posts'
+---
+
+<Base title="diary" description={sections.diary.intro} backdrop={sections.diary.backdrop}>
+  <EntryList section="diary" />
+</Base>

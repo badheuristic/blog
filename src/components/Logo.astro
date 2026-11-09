@@ -1,0 +1,42 @@
+---
+// Same mark as the main site; here it leads back to the blog's index.
+---
+
+<a href="/" class="logo" aria-label="Blog home">
+  ch<span class="brace">{'{'}</span>
+  <!-- Drawn instead of typed: Iosevka Aile renders ✱ as a dot. -->
+  <svg class="star" viewBox="-10 -10 20 20" aria-hidden="true">
+    <g stroke="currentColor" stroke-width="3.4">
+      <line x1="0" y1="-9" x2="0" y2="9"></line>
+      <line x1="0" y1="-9" x2="0" y2="9" transform="rotate(60)"></line>
+      <line x1="0" y1="-9" x2="0" y2="9" transform="rotate(120)"></line>
+    </g>
+  </svg>
+  <span class="brace">{'}'}</span>
+</a>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: baseline;
+    font-size: var(--text-base);
+    font-weight: var(--weight-medium);
+  }
+
+  .brace {
+    font-weight: var(--weight-light);
+    color: var(--fg-muted);
+  }
+
+  .star {
+    width: 0.7em;
+    height: 0.7em;
+    margin-inline: 0.1em;
+    align-self: center;
+    transition: transform 600ms var(--ease-out);
+  }
+
+  .logo:hover .star {
+    transform: rotate(180deg);
+  }
+</style>

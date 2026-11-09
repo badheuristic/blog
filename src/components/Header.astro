@@ -1,0 +1,54 @@
+---
+import { config } from '../config'
+import Logo from './Logo.astro'
+import ThemeSwitch from './ThemeSwitch.astro'
+---
+
+<header class="header">
+  <Logo />
+  <div class="end">
+    <a href={config.home} class="home">Home</a>
+    <ThemeSwitch />
+  </div>
+</header>
+
+<style>
+  .header {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: var(--z-chrome);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: var(--gutter);
+    pointer-events: none;
+  }
+
+  .header > * {
+    pointer-events: auto;
+  }
+
+  .end {
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+  }
+
+  .home {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-regular);
+  }
+
+  /* Running text scrolls under the header, so it sits on a page-colored strip that fades
+     out at the bottom (the main site does the same on narrow screens). */
+  .header::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: -1;
+    height: calc(var(--gutter) * 2 + 2.5rem);
+    background: linear-gradient(var(--bg) 60%, transparent);
+    pointer-events: none;
+    transition: background var(--dur) var(--ease-out);
+  }
+</style>

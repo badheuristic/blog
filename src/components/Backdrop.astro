@@ -1,0 +1,41 @@
+---
+// The big faint word fixed bottom left, behind the content, like the main site's section
+// titles. Posts scroll over it.
+interface Props {
+  text: string
+}
+const { text } = Astro.props
+---
+
+<div class="backdrop" aria-hidden="true">{text}</div>
+
+<style>
+  .backdrop {
+    position: fixed;
+    left: var(--gutter);
+    bottom: var(--gutter);
+    z-index: var(--z-backdrop);
+    max-width: var(--zone-title-w);
+    font-size: var(--text-display);
+    font-weight: var(--weight-light);
+    letter-spacing: var(--tracking-display);
+    line-height: var(--leading-display);
+    white-space: nowrap;
+    color: var(--title-faint);
+    pointer-events: none;
+    user-select: none;
+    transition: color var(--dur) var(--ease-out);
+  }
+
+  @media (max-width: 1023px), (max-height: 500px) {
+    .backdrop {
+      font-size: clamp(2.5rem, 14vw, 4rem);
+    }
+  }
+
+  @media (max-height: 500px) {
+    .backdrop {
+      display: none;
+    }
+  }
+</style>

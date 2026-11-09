@@ -1,0 +1,105 @@
+/* Design tokens, kept in step with the main site (website/src/styles/tokens.css).
+   Monotone only; no borders, no rounded corners. Blog-only tokens are marked. */
+
+:root {
+  /* Theme: light (default) */
+  --bg: #ffffff;
+  --fg: #000000;
+  --fg-muted: #7a7a7a;
+  --fg-faint: #dcdcdc;
+  --title-faint: #ededed;
+  --surface: #d9d9d9;
+  --surface-alt: #1c1c1c;
+  --on-surface: #000000;
+  --on-surface-alt: #f5f5f5;
+  --on-surface-alt-muted: rgb(245 245 245 / 0.55);
+  --surface-alt-hover: rgb(255 255 255 / 0.08);
+  /* Fainter than the main site (0.22 / 0.12): here the squares sit behind long text. */
+  --particle: rgb(0 0 0 / 0.13);
+
+  /* Blog: a quiet flat fill behind code, a step off the page in either theme. */
+  --code-bg: #f3f3f3;
+  /* Blog: code token shades, darkest to lightest (comments). */
+  --code-1: #000000;
+  --code-2: #4a4a4a;
+  --code-3: #7a7a7a;
+  --code-4: #a3a3a3;
+
+  /* Type */
+  --font: 'Iosevka Aile', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-code: 'Iosevka', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: clamp(1.125rem, 0.9rem + 0.6vw, 1.5rem);
+  /* Blog: post titles. Large, but a step down from the display size so long titles fit. */
+  --text-title: clamp(2.25rem, 1rem + 3.2vw, 4rem);
+  --text-display: clamp(3.5rem, 1rem + 6.5vw, 8rem);
+  --tracking-display: -0.04em;
+  --leading-display: 0.85;
+
+  /* Spacing */
+  --gutter: clamp(1rem, 0.5rem + 2vw, 2.5rem);
+
+  /* Layout: content keeps to this column, as on the main site. */
+  --col-start: 44vw;
+  --col-end: 81vw;
+  /* Blog: readable measure for running text. */
+  --measure: 62ch;
+
+  /* Reserved zone for the fixed backdrop title (bottom left). */
+  --zone-title-w: 34vw;
+  --zone-title-h: clamp(8rem, 22vh, 14rem);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 150ms;
+  --dur: 300ms;
+
+  /* Layers */
+  --z-particles: 0;
+  --z-backdrop: 1;
+  --z-content: 2;
+  --z-chrome: 4;
+  --z-cursor: 10;
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #222222;
+  --fg: #ffffff;
+  --fg-muted: #bdbdbd;
+  --fg-faint: #3a3a3a;
+  --title-faint: #2d2d2d;
+  --surface: #dcdcdc;
+  --surface-alt: #303030;
+  --surface-alt-hover: rgb(255 255 255 / 0.1);
+  --particle: rgb(255 255 255 / 0.07);
+
+  --code-bg: #2a2a2a;
+  --code-1: #ffffff;
+  --code-2: #d4d4d4;
+  --code-3: #a8a8a8;
+  --code-4: #7c7c7c;
+
+  color-scheme: dark;
+}
+
+@media (max-width: 1023px), (max-height: 500px) {
+  :root {
+    --col-start: var(--gutter);
+    --col-end: calc(100vw - var(--gutter));
+    --zone-title-w: 70vw;
+    --zone-title-h: 15vh;
+  }
+}
+
+@media (max-height: 500px) {
+  :root {
+    --zone-title-h: 0px;
+  }
+}

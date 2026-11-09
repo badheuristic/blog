@@ -1,0 +1,15 @@
+---
+import Entry from '../../layouts/Entry.astro'
+import { getEntries } from '../../lib/posts'
+
+export async function getStaticPaths() {
+  const entries = await getEntries('posts')
+  // Newest first, so the newer entry is the one before.
+  return entries.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: { entry, newer: entries[i - 1], older: entries[i + 1] },
+  }))
+}
+---
+
+<Entry {...Astro.props} />

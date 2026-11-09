@@ -1,0 +1,146 @@
+---
+// A dot at the pointer with a larger, fainter circle easing behind it, as on the main
+// site. Mouse devices only; touch keeps the platform behavior.
+---
+
+<div class="trail" aria-hidden="true" data-cursor-trail></div>
+<div class="dot" aria-hidden="true" data-cursor-dot></div>
+
+<script>
+  import { lastPointer } from '../lib/pointer'
+
+  // Fraction of the remaining distance the trail covers per 60fps frame.
+  const TRAIL_FOLLOW = 0.15
+  const query = matchMedia('(hover: hover) and (pointer: fine)')
+
+  const dot = document.querySelector<HTMLElement>('[data-cursor-dot]')!
+  const trail = document.querySelector<HTMLElement>('[data-cursor-trail]')!
+
+  const target = { x: 0, y: 0 }
+  const trailPos = { x: 0, y: 0 }
+  let visible = false
+  let frame = 0
+  let last = performance.now()
+
+  const setVisible = (value: boolean) => {
+    visible = value
+    dot.dataset.visible = trail.dataset.visible = String(value)
+  }
+
+  const place = () => {
+    dot.style.transform = `translate3d(${target.x}px, ${target.y}px, 0)`
+    trail.style.transform = `translate3d(${trailPos.x}px, ${trailPos.y}px, 0)`
+  }
+
+  const onMove = (e: PointerEvent) => {
+    target.x = e.clientX
+    target.y = e.clientY
+    if (!visible) {
+      // Appear in place instead of sliding in from the last known spot.
+      trailPos.x = target.x
+      trailPos.y = target.y
+      setVisible(true)
+    }
+  }
+  const onLeave = () => setVisible(false)
+
+  const tick = (now: number) => {
+    const dt = Math.min((now - last) / (1000 / 60), 4)
+    last = now
+    const follow = 1 - Math.pow(1 - TRAIL_FOLLOW, dt)
+    trailPos.x += (target.x - trailPos.x) * follow
+    trailPos.y += (target.y - trailPos.y) * follow
+    place()
+    frame = requestAnimationFrame(tick)
+  }
+
+  const start = () => {
+    // Coming from another page of the blog: show up where the click was, so the cursor
+    // doesn't vanish until the mouse moves again.
+    const from = lastPointer()
+    if (from) {
+      target.x = trailPos.x = from.x
+      target.y = trailPos.y = from.y
+      place()
+      setVisible(true)
+    }
+    window.addEventListener('pointermove', onMove)
+    document.addEventListener('pointerleave', onLeave)
+    frame = requestAnimationFrame(tick)
+  }
+
+  const stop = () => {
+    cancelAnimationFrame(frame)
+    window.removeEventListener('pointermove', onMove)
+    document.removeEventListener('pointerleave', onLeave)
+    setVisible(false)
+  }
+
+  if (query.matches) start()
+  query.addEventListener('change', () => (query.matches ? start() : stop()))
+</script>
+
+<style>
+  /* Hide the system cursor wherever the custom one shows (the same query as the script). */
+  @media (hover: hover) and (pointer: fine) {
+    :global(html),
+    :global(html *) {
+      cursor: none !important;
+    }
+  }
+
+  .dot,
+  .trail {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: var(--z-cursor);
+    pointer-events: none;
+    /* The one exception to the no-rounded-corners rule. */
+    border-radius: 50%;
+    /* White + difference inverts whatever is underneath, so it keeps its contrast on
+       text, code blocks and the page alike, in either theme. */
+    background: #fff;
+    mix-blend-mode: difference;
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease-out);
+    will-change: transform;
+  }
+
+  /* Named, so view transitions (theme dissolve, page changes) keep the cursor on top
+     instead of folding it into the page snapshot. */
+  .dot {
+    width: 10px;
+    height: 10px;
+    margin: -5px 0 0 -5px;
+    view-transition-name: cursor-dot;
+  }
+
+  .trail {
+    width: 34px;
+    height: 34px;
+    margin: -17px 0 0 -17px;
+    view-transition-name: cursor-trail;
+  }
+
+  .dot[data-visible='true'] {
+    opacity: 1;
+  }
+
+  .trail[data-visible='true'] {
+    opacity: 0.15;
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    .dot,
+    .trail {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .trail {
+      display: none;
+    }
+  }
+</style>

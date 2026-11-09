@@ -1,0 +1,201 @@
+---
+// One post or diary entry: back link, title, meta line, tags, the text, then the older
+// and newer entries in the same section.
+import { render } from 'astro:content'
+import { entryUrl, formatDate, isoDate, readingTime, sections, type Entry } from '../lib/posts'
+import '../styles/prose.css'
+import Base from './Base.astro'
+
+interface Props {
+  entry: Entry
+  newer?: Entry
+  older?: Entry
+}
+
+const { entry, newer, older } = Astro.props
+const section = sections[entry.collection]
+const { Content } = await render(entry)
+const { title, summary, date, updated, tags, draft } = entry.data
+---
+
+<Base title={title} description={summary} backdrop={section.backdrop} article>
+  <article>
+    <header class="head">
+      <a href={section.path} class="back"><span aria-hidden="true">←</span> {section.label}</a>
+      <h1 class="title">{title}</h1>
+      <p class="meta">
+        <time datetime={isoDate(date)}>{formatDate(date)}</time>
+        <span class="dot" aria-hidden="true"></span>
+        <span>{readingTime(entry)} min read</span>
+        {
+          updated && (
+            <>
+              <span class="dot" aria-hidden="true" />
+              <span>
+                updated <time datetime={isoDate(updated)}>{formatDate(updated)}</time>
+              </span>
+            </>
+          )
+        }
+        {draft && <span class="draft">draft</span>}
+      </p>
+      {
+        tags.length > 0 && (
+          <ul class="tags" aria-label="Tags">
+            {tags.map((tag) => (
+              <li class="tag">{tag}</li>
+            ))}
+          </ul>
+        )
+      }
+    </header>
+
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+
+  {
+    (newer || older) && (
+      <nav class="pager" aria-label={`More in ${section.label}`}>
+        {older ? (
+          <a href={entryUrl(older)} class="page older">
+            <span class="label">
+              <span aria-hidden="true">←</span> older
+            </span>
+            <span class="pageTitle">{older.data.title}</span>
+          </a>
+        ) : (
+          <span />
+        )}
+        {newer && (
+          <a href={entryUrl(newer)} class="page newer">
+            <span class="label">
+              newer <span aria-hidden="true">→</span>
+            </span>
+            <span class="pageTitle">{newer.data.title}</span>
+          </a>
+        )}
+      </nav>
+    )
+  }
+</Base>
+
+<style>
+  .head {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 3.5rem;
+  }
+
+  .back,
+  .label {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-regular);
+    color: var(--fg-muted);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .back {
+    align-self: flex-start;
+    margin-bottom: 1rem;
+  }
+
+  .back:hover {
+    color: var(--fg);
+  }
+
+  .title {
+    font-size: var(--text-title);
+    font-weight: var(--weight-light);
+    letter-spacing: var(--tracking-display);
+    line-height: 0.95;
+    text-wrap: balance;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    font-size: var(--text-sm);
+    color: var(--fg-muted);
+  }
+
+  /* Square separators, the site's motif. */
+  .dot {
+    width: 0.25rem;
+    height: 0.25rem;
+    background: var(--fg-faint);
+  }
+
+  .draft {
+    padding: 0.1em 0.45em;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-regular);
+    background: var(--surface);
+    color: var(--on-surface);
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+  }
+
+  .tag {
+    padding: 0.15em 0.6em;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-regular);
+    background: var(--code-bg);
+    color: var(--fg-muted);
+  }
+
+  .pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    max-width: var(--measure);
+    margin-top: 6rem;
+  }
+
+  .page {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .newer {
+    grid-column: 2;
+    text-align: right;
+  }
+
+  .pageTitle {
+    transition: translate var(--dur) var(--ease-out);
+  }
+
+  .page:hover .label {
+    color: var(--fg);
+  }
+
+  .older:hover .pageTitle {
+    translate: -0.4rem 0;
+  }
+
+  .newer:hover .pageTitle {
+    translate: 0.4rem 0;
+  }
+
+  @media (max-width: 1023px), (max-height: 500px) {
+    .pager {
+      grid-template-columns: 1fr;
+    }
+
+    .newer {
+      grid-column: 1;
+      grid-row: 1;
+    }
+  }
+</style>

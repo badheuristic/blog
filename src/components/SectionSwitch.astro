@@ -1,0 +1,52 @@
+---
+// `posts / diary` at the top of the lists: the current section at full contrast, the
+// other muted, like the theme switch.
+import { sections, type Section } from '../lib/posts'
+
+interface Props {
+  current: Section
+}
+const { current } = Astro.props
+const order: Section[] = ['posts', 'diary']
+---
+
+<nav class="switch" aria-label="Sections">
+  {
+    order.map((section, i) => (
+      <>
+        {i > 0 && (
+          <span class="divider" aria-hidden="true">
+            /
+          </span>
+        )}
+        <a href={sections[section].path} class="option" aria-current={section === current ? 'page' : undefined}>
+          {sections[section].label}
+        </a>
+      </>
+    ))
+  }
+</nav>
+
+<style>
+  .switch {
+    display: flex;
+    align-items: baseline;
+    font-size: var(--text-lg);
+    line-height: 1.2;
+  }
+
+  .divider {
+    padding-inline: 0.35em;
+    color: var(--fg-faint);
+  }
+
+  .option {
+    color: var(--fg-muted);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .option:hover,
+  .option[aria-current='page'] {
+    color: var(--fg);
+  }
+</style>
