@@ -25,6 +25,8 @@ export async function ipsum(dolor: string[], limit = 3): Promise<number> {
 }
 ```
 
+![A gray placeholder](./lorem.svg "Lorem ipsum dolor sit amet, a captioned image.")
+
 ### Quis autem vel eum
 
 1. Iure reprehenderit qui in ea voluptate velit esse

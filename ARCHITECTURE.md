@@ -13,6 +13,12 @@ of a long post (no mascot, no section stepping, native scroll).
 - **Shiki** (built into Astro) highlights code with two hand-made grayscale themes
   (`src/lib/codeThemes.ts`). Both are emitted as CSS variables, and `prose.css` picks one
   from `data-theme`, so code follows the theme switch without a reload.
+- **Sätteri**, Astro 7's markdown processor, with one plugin of ours (`lib/embeds.ts`)
+  for captions, demos and diagrams. (Remark plugins would need the old unified
+  pipeline installed; we don't use any.)
+- **Sharp** optimizes images where it loads. On NixOS it can't find `libstdc++`, so
+  `astro.config.mjs` falls back to serving images as they are; a normal build machine
+  gets optimized images.
 - **bun** for packages and scripts, as on the main site.
 
 ## Shared with the main site
@@ -81,6 +87,38 @@ cover: ./cover.png       # optional, not shown anywhere yet
 draft: true              # optional: shown in `bun dev` (marked), left out of the build
 ```
 
+Beyond plain markdown (`lib/embeds.ts`):
+
+````md
+![alt text](./photo.png "A caption")     image with a title: a figure with a caption
+
+```demo
+src: hub-location                        an interactive page in demos/hub-location/
+caption: The validation tool, simulated.
+height: 1600                             optional, its height until it reports one
+```
+
+```diagram
+src: hub-architecture                    src/content/diagrams/hub-architecture.svg
+caption: Where it's heading.
+```
+````
+
+- **Demos** are standalone pages in `demos/<name>/` (not `public/`). They run in a frame
+  that takes the blog's theme and grows to fit, through `demos/embed.js`, which a demo
+  includes with `<script src="../embed.js"></script>` (`components/DemoFrames.astro` is
+  the page's side). The caption gets an "open on its own ↗" link. The dev server serves
+  every demo; a build copies only those embedded by published entries
+  (`lib/embedFiles.ts`), so a draft's demo doesn't ship early.
+- **Diagrams** are SVGs whose shapes use classes instead of colors: `store`, `act` and
+  `process` groups (a `rect` plus `text.t` title and `text.s` subtitle), `path.arrow`,
+  `text.note` and `text.legend`. `prose.css` fills them from the `--diagram-*` tokens,
+  so they follow the theme. They're inlined when the page renders
+  (`components/Diagrams.astro`), since Astro caches rendered markdown by the post's own
+  text and wouldn't notice an edited SVG; in dev an edit reloads the browser.
+- **Wide**: demos and diagrams reach left past the text column (up to 64rem), keeping
+  their right edge on it. Diagrams keep a 40rem minimum and scroll sideways on phones.
+
 Post typography (`src/styles/prose.css`): light headings set by size, `strong` only goes
 up to Medium, links get a faint underline that darkens on hover, bullets are small
 squares, quotes are indented and muted (no side rule), `---` is one small square, tables
@@ -106,8 +144,9 @@ Each step leaves a working blog.
    - The cursor's dot and trail have their own `view-transition-name`, so they stay on
      top during the theme dissolve and page reveal.
    - Chrome and Safari 18.2+ run the reveal; Firefox navigates normally.
-3. **Rich posts.** Images with captions, embedding interactive demos (like the hub
-   location simulation in `../blogpost/demo`), grayscale diagrams.
+3. ✅ **Rich posts.** Images with captions, embedded interactive demos (the hub location
+   simulation from `../blogpost/demo`), grayscale diagrams (the architecture diagram
+   from `../blogpost`, redrawn). See Posts above.
 4. **Extras.** Tag pages, link previews (Open Graph images), a table of contents for long
    posts.
 5. **Polish and deploy.** Accessibility, performance, the real URLs in `src/config.ts`,
@@ -117,5 +156,5 @@ Each step leaves a working blog.
 
 - **Hosting and URL.** A subdomain (`blog.<domain>`) or somewhere else? `src/config.ts`
   holds placeholders until then.
-- **The diagram in `../blogpost`** uses yellow and cyan. It needs a grayscale version
-  before it goes in a post.
+- **The hub location demo** draws 1px gaps between tiles in `--fg-faint`, which read as
+  borders. It's left as written; worth a pass before the entry goes public.

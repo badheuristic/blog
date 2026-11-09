@@ -4,6 +4,8 @@
 import { render } from 'astro:content'
 import { entryUrl, formatDate, isoDate, readingTime, sections, type Entry } from '../lib/posts'
 import '../styles/prose.css'
+import DemoFrames from '../components/DemoFrames.astro'
+import Diagrams from '../components/Diagrams.astro'
 import Base from './Base.astro'
 
 interface Props {
@@ -51,8 +53,9 @@ const { title, summary, date, updated, tags, draft } = entry.data
     </header>
 
     <div class="prose">
-      <Content />
+      <Diagrams><Content /></Diagrams>
     </div>
+    <DemoFrames />
   </article>
 
   {

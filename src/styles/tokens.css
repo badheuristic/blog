@@ -24,6 +24,14 @@
   --code-2: #4a4a4a;
   --code-3: #7a7a7a;
   --code-4: #a3a3a3;
+  /* Blog: diagram fills, three steps apart in either theme: what's stored (darkest),
+     where people act, and sources or processes (lightest). Each with its text color. */
+  --diagram-store: #1c1c1c;
+  --diagram-on-store: #f5f5f5;
+  --diagram-act: #bdbdbd;
+  --diagram-on-act: #000000;
+  --diagram-process: #ececec;
+  --diagram-on-process: #000000;
 
   /* Type */
   --font: 'Iosevka Aile', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -85,6 +93,12 @@
   --code-2: #d4d4d4;
   --code-3: #a8a8a8;
   --code-4: #7c7c7c;
+  --diagram-store: #e6e6e6;
+  --diagram-on-store: #111111;
+  --diagram-act: #6a6a6a;
+  --diagram-on-act: #ffffff;
+  --diagram-process: #333333;
+  --diagram-on-process: #ffffff;
 
   color-scheme: dark;
 }

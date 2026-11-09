@@ -1,0 +1,944 @@
+<script src="../embed.js"></script>
+<title>hub location validation — interactive simulation</title>
+<style>
+  @font-face {
+    font-family: 'Iosevka Aile';
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+    src: url('fonts/iosevka-aile-300.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Iosevka Aile';
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+    src: url('fonts/iosevka-aile-400.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Iosevka Aile';
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+    src: url('fonts/iosevka-aile-500.woff2') format('woff2');
+  }
+
+  :root {
+    --bg: #ffffff;
+    --fg: #000000;
+    --fg-muted: #7a7a7a;
+    --fg-faint: #dcdcdc;
+    --title-faint: #ededed;
+    --surface: #d9d9d9;
+    --surface-alt: #1c1c1c;
+    --on-surface: #000000;
+    --on-surface-alt: #f5f5f5;
+    --on-surface-alt-muted: rgb(245 245 245 / 0.55);
+    --surface-alt-hover: rgb(255 255 255 / 0.08);
+    --particle: rgb(0 0 0 / 0.12);
+
+    --font: 'Iosevka Aile', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-code: 'Iosevka', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: clamp(1.125rem, 0.9rem + 0.6vw, 1.5rem);
+    --text-display: clamp(2.25rem, 1rem + 3.2vw, 4rem);
+    --tracking-display: -0.03em;
+
+    --gutter: clamp(1rem, 0.5rem + 2vw, 2.5rem);
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --dur-fast: 150ms;
+    --dur: 300ms;
+    --dur-slow: 550ms;
+    color-scheme: light;
+  }
+
+  :root[data-theme='dark'] {
+    --bg: #222222;
+    --fg: #ffffff;
+    --fg-muted: #bdbdbd;
+    --fg-faint: #3a3a3a;
+    --title-faint: #2d2d2d;
+    --surface: #dcdcdc;
+    --surface-alt: #303030;
+    --surface-alt-hover: rgb(255 255 255 / 0.1);
+    --particle: rgb(255 255 255 / 0.1);
+    color-scheme: dark;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg: #222222;
+      --fg: #ffffff;
+      --fg-muted: #bdbdbd;
+      --fg-faint: #3a3a3a;
+      --title-faint: #2d2d2d;
+      --surface: #dcdcdc;
+      --surface-alt: #303030;
+      --surface-alt-hover: rgb(255 255 255 / 0.1);
+      --particle: rgb(255 255 255 / 0.1);
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; border: 0; border-radius: 0; margin: 0; padding: 0; }
+  html { scrollbar-width: none; }
+  html::-webkit-scrollbar { display: none; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font);
+    font-weight: 300;
+    font-size: var(--text-base);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  img, svg, canvas, video { display: block; max-width: 100%; }
+  button { font: inherit; color: inherit; background: none; cursor: pointer; text-align: left; }
+  a { color: inherit; text-decoration: none; }
+  ::selection { background: var(--fg); color: var(--bg); }
+  :focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+
+  .wrap { max-width: 76rem; margin: 0 auto; padding: 0 var(--gutter); }
+
+  /* ---------- header ---------- */
+  header.page-head { padding: clamp(2.5rem, 4vw + 1rem, 5rem) 0 clamp(2rem, 3vw, 3rem); }
+  .eyebrow {
+    display: block; font-family: var(--font-code); font-size: var(--text-xs);
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg-muted);
+    margin-bottom: 0.75rem;
+  }
+  h1 {
+    font-weight: 300; font-size: var(--text-display); letter-spacing: var(--tracking-display);
+    line-height: 0.95; text-wrap: balance;
+  }
+  .dek {
+    margin-top: 1.25rem; max-width: 62ch; color: var(--fg-muted); font-size: var(--text-lg);
+    font-weight: 300; line-height: 1.5;
+  }
+  .dek + .dek { margin-top: 0.75rem; }
+
+  /* ---------- generic section scaffolding ---------- */
+  section { padding: clamp(1.75rem, 3vw, 2.75rem) 0; }
+  .section-head { margin-bottom: 1.25rem; }
+  .section-label {
+    font-family: var(--font-code); font-size: var(--text-xs); letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--fg-muted); display: flex; align-items: baseline; gap: 0.6em;
+  }
+  .section-label .node-dot { width: 0.5em; height: 0.5em; background: var(--fg); display: inline-block; flex: none; }
+  .section-title { font-weight: 300; font-size: 1.4rem; margin-top: 0.35rem; }
+  .section-note { color: var(--fg-muted); font-size: var(--text-sm); max-width: 58ch; margin-top: 0.4rem; }
+
+  /* ---------- connectors ---------- */
+  .connector { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.4rem 0; }
+  .connector::before { content: ''; width: 1px; height: 1.75rem; background: var(--fg-faint); }
+  .connector::after { content: ''; width: 6px; height: 6px; background: var(--fg-faint); }
+
+  /* ---------- sources row ---------- */
+  .sources { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--fg-faint); }
+  @media (max-width: 1023px) { .sources { grid-template-columns: repeat(2, 1fr); } }
+  .source-tile {
+    background: var(--bg); padding: 1rem 1.1rem; min-height: 5.5rem;
+    display: flex; flex-direction: column; justify-content: center; gap: 0.3rem;
+  }
+  .source-tile .t { font-size: var(--text-sm); font-weight: 500; }
+  .source-tile .s { font-size: var(--text-xs); color: var(--fg-muted); font-family: var(--font-code); }
+
+  /* ---------- readings bar ---------- */
+  .readings-bar {
+    background: var(--surface); color: var(--on-surface); padding: 1rem 1.25rem;
+    display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+  }
+  .readings-bar .t { font-weight: 500; font-size: var(--text-sm); }
+  .readings-bar .s { font-family: var(--font-code); font-size: var(--text-xs); color: var(--fg-muted); }
+
+  /* ---------- validation job ---------- */
+  .rules-box { background: var(--surface-alt); color: var(--on-surface-alt); padding: 1.25rem 1.4rem; }
+  .rules-box .t { font-weight: 500; font-size: var(--text-sm); margin-bottom: 0.75rem; }
+  .rules-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem 1.5rem;
+    font-family: var(--font-code); font-size: var(--text-xs); color: var(--on-surface-alt-muted);
+  }
+  .rules-grid span { color: var(--on-surface-alt); }
+  @media (max-width: 1023px) { .rules-grid { grid-template-columns: 1fr; } }
+
+  /* ---------- controls + dashboard ---------- */
+  .controls-bar {
+    display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+  }
+  .btn {
+    font-family: var(--font); font-weight: 500; font-size: var(--text-sm);
+    background: var(--surface); color: var(--on-surface); padding: 0.75rem 1.25rem;
+    transition: background var(--dur-fast) var(--ease-out);
+  }
+  .btn:hover { background: var(--fg-faint); }
+  .btn.primary { background: var(--surface-alt); color: var(--on-surface-alt); }
+  .btn.primary:not(:disabled):hover { background-color: var(--surface-alt); box-shadow: inset 0 0 0 999px var(--surface-alt-hover); }
+  .btn:disabled { color: var(--fg-muted); cursor: default; }
+  .btn:disabled:hover { background: var(--surface); }
+  .run-meta { font-family: var(--font-code); font-size: var(--text-xs); color: var(--fg-muted); margin-left: auto; }
+
+  .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--fg-faint); }
+  .kpi-tile { background: var(--bg); padding: 1rem 1.1rem; }
+  .kpi-tile .v { font-family: var(--font-code); font-size: 1.5rem; font-weight: 400; font-variant-numeric: tabular-nums; }
+  .kpi-tile .l { font-size: var(--text-xs); color: var(--fg-muted); margin-top: 0.25rem; }
+  @media (max-width: 1023px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+
+  /* ---------- buckets ---------- */
+  .buckets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--fg-faint); }
+  @media (max-width: 1023px) { .buckets { grid-template-columns: repeat(2, 1fr); } }
+  .lane { background: var(--bg); padding: 1rem 1.1rem 1.1rem; display: flex; flex-direction: column; min-height: 10rem; }
+  .lane-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
+  .lane-title { font-weight: 500; font-size: var(--text-sm); }
+  .lane-count {
+    font-family: var(--font-code); font-size: var(--text-sm); color: var(--fg-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .lane-rule { font-size: var(--text-xs); color: var(--fg-muted); margin-top: 0.4rem; line-height: 1.4; }
+  .lane-chips {
+    display: flex; flex-wrap: wrap; gap: 4px; margin-top: 0.75rem; align-content: flex-start;
+    max-height: 5.5rem; overflow-y: auto; flex: 1;
+  }
+  .lane-chips::-webkit-scrollbar { display: none; }
+  .lane-chips { scrollbar-width: none; }
+  .chip {
+    width: 24px; height: 24px; background: var(--surface); color: var(--on-surface);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-code); font-size: 0.55rem; flex: none; position: relative;
+    transition: background var(--dur-fast) var(--ease-out);
+  }
+  .chip:hover { background: var(--fg-faint); }
+  .chip.human { background: var(--surface-alt); color: var(--on-surface-alt); }
+  .chip.human:hover { background: var(--surface-alt); opacity: 0.85; }
+  .chip.human::after {
+    content: ''; position: absolute; top: -2px; right: -2px; width: 5px; height: 5px; background: var(--on-surface-alt);
+  }
+
+  .flight-layer { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+  .flying-chip {
+    position: absolute; width: 24px; height: 24px; background: var(--surface);
+    transition: transform var(--dur-slow) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
+    will-change: transform;
+  }
+
+  .fork-note { font-size: var(--text-sm); color: var(--fg-muted); margin-top: 1.25rem; max-width: 62ch; line-height: 1.6; }
+  .fork-note strong { color: var(--fg); font-weight: 500; }
+
+  /* ---------- history / log ---------- */
+  .log-list { display: flex; flex-direction: column; }
+  .log-row {
+    display: grid; grid-template-columns: 7rem 1fr auto; gap: 1rem; align-items: baseline;
+    padding: 0.7rem 0; border-top: 1px solid var(--fg-faint);
+  }
+  .log-row:first-child { border-top: 1px solid var(--fg-faint); }
+  .log-time { font-family: var(--font-code); font-size: var(--text-xs); color: var(--fg-muted); }
+  .log-body { font-size: var(--text-sm); }
+  .log-body b { font-weight: 500; }
+  .log-who { font-family: var(--font-code); font-size: var(--text-xs); color: var(--fg-muted); white-space: nowrap; }
+  .log-empty { color: var(--fg-muted); font-size: var(--text-sm); padding: 1.5rem 0; }
+  @media (max-width: 1023px) {
+    .log-row { grid-template-columns: 1fr; gap: 0.2rem; }
+  }
+
+  footer.page-foot {
+    padding: 2.5rem 0 4rem; color: var(--fg-muted); font-size: var(--text-xs);
+    font-family: var(--font-code); max-width: 62ch; line-height: 1.6;
+  }
+
+  /* ---------- review aside ---------- */
+  .scrim {
+    position: fixed; inset: 0; background: rgb(0 0 0 / 0.35); opacity: 0; pointer-events: none;
+    transition: opacity var(--dur) var(--ease-out); z-index: 20;
+  }
+  .scrim.open { opacity: 1; pointer-events: auto; }
+  aside.review {
+    position: fixed; top: 0; right: 0; height: 100%; width: min(26rem, 100vw);
+    background: var(--bg); color: var(--fg); z-index: 21; padding: clamp(1.5rem, 3vw, 2.25rem);
+    transform: translateX(100%); transition: transform var(--dur-slow) var(--ease-out);
+    overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem;
+    box-shadow: none;
+  }
+  aside.review.open { transform: translateX(0); }
+  .review-close {
+    align-self: flex-end; font-family: var(--font-code); font-size: var(--text-xs);
+    color: var(--fg-muted); letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .review-close:hover { color: var(--fg); }
+  .review-id { font-family: var(--font-code); font-size: var(--text-xs); color: var(--fg-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+  .review-status { font-size: 1.1rem; font-weight: 500; }
+  .review-reason { font-size: var(--text-sm); color: var(--fg-muted); line-height: 1.6; }
+  .review-table { font-family: var(--font-code); font-size: var(--text-xs); display: flex; flex-direction: column; gap: 0.35rem; }
+  .review-table .r { display: flex; justify-content: space-between; gap: 1rem; padding: 0.3rem 0; border-top: 1px solid var(--fg-faint); }
+  .review-table .r:first-child { border-top: 1px solid var(--fg-faint); }
+  .review-table .r span:first-child { color: var(--fg-muted); }
+  .review-actions { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.25rem; }
+  .review-actions .btn { width: 100%; }
+  .review-decided {
+    background: var(--surface); padding: 0.85rem 1rem; font-size: var(--text-sm);
+  }
+  .review-hint { font-size: var(--text-xs); color: var(--fg-muted); line-height: 1.5; }
+</style>
+
+<div id="scrim" class="scrim"></div>
+
+<main class="wrap">
+  <header class="page-head">
+    <span class="eyebrow">interactive simulation</span>
+    <h1>hub location validation</h1>
+    <p class="dek">A small operations team has GPS coordinates for its hubs that drift out of
+      sync with reality. This runs the actual 2-of-3 validation rule the team ships today
+      against synthetic readings, then walks the result through the review and
+      correction pipeline it's moving into next.</p>
+    <p class="dek">Every threshold below — 100&nbsp;m agreement, a 2&nbsp;km line between a
+      quiet database fix and one that needs a human to confirm it — is a real number from
+      that project's <code style="font-family: var(--font-code)">config.yaml</code>, not a
+      demo stand-in.</p>
+  </header>
+
+  <div id="simulator" style="position: relative;">
+    <div class="flight-layer" id="flightLayer"></div>
+
+    <section id="sourcesSection">
+      <div class="section-head">
+        <span class="section-label"><span class="node-dot"></span>sources</span>
+        <p class="section-note">Three independent reads on where a hub actually is, plus the coordinate already on file.</p>
+      </div>
+      <div class="sources">
+        <div class="source-tile"><div class="t">staff submission</div><div class="s">app · GPS + photo</div></div>
+        <div class="source-tile"><div class="t">phone heartbeat</div><div class="s">hub phone · GPS</div></div>
+        <div class="source-tile"><div class="t">database coordinate</div><div class="s">production · hubs table</div></div>
+        <div class="source-tile"><div class="t">cell-tower fix</div><div class="s">annotation only</div></div>
+      </div>
+    </section>
+
+    <div class="connector" aria-hidden="true"></div>
+
+    <section id="readingsSection">
+      <div class="readings-bar">
+        <span class="t">location readings table</span>
+        <span class="s" id="readingsMeta">no hubs generated yet</span>
+      </div>
+    </section>
+
+    <div class="connector" aria-hidden="true"></div>
+
+    <section id="validationSection">
+      <div class="rules-box">
+        <div class="t">validation job — the 2-of-3 rule</div>
+        <div class="rules-grid">
+          <div>agreement distance <span id="rAgree">100 m</span></div>
+          <div>signals-agree distance <span id="rSignals">250 m</span></div>
+          <div>direct-update threshold <span id="rDirect">2 km</span></div>
+          <div>gross-error threshold <span id="rGross">10 km</span></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="connector" aria-hidden="true"></div>
+
+    <section id="controlsSection">
+      <div class="controls-bar">
+        <button class="btn primary" id="runBtn">run validation</button>
+        <button class="btn" id="syncBtn" disabled>simulate next sync</button>
+        <button class="btn" id="resetBtn" disabled>reset</button>
+        <span class="run-meta" id="runMeta">—</span>
+      </div>
+
+      <div class="section-head">
+        <span class="section-label"><span class="node-dot"></span>dashboard and alerts</span>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi-tile"><div class="v" id="kpiTotal">0</div><div class="l">hubs processed</div></div>
+        <div class="kpi-tile"><div class="v" id="kpiValidated">—</div><div class="l">validated</div></div>
+        <div class="kpi-tile"><div class="v" id="kpiMigration">0</div><div class="l">flagged for migration</div></div>
+        <div class="kpi-tile"><div class="v" id="kpiReview">0</div><div class="l">needs a person</div></div>
+        <div class="kpi-tile"><div class="v" id="kpiHuman">0</div><div class="l">human decisions recorded</div></div>
+      </div>
+    </section>
+
+    <section id="bucketsSection">
+      <div class="section-head">
+        <span class="section-label"><span class="node-dot"></span>hub assessments</span>
+        <p class="section-note">Every generated hub lands in exactly one bucket, with the evidence that put it there. Click a square to inspect it.</p>
+      </div>
+      <div class="buckets" id="buckets"></div>
+      <p class="fork-note">In the architecture this feeds three outcomes: <strong>auto-update</strong> when
+        two signals agree outright, a <strong>review page</strong> when a person needs to confirm or drop a
+        pin, and a <strong>request for a new reading</strong> when there isn't enough to decide yet. The dark
+        squares below are hubs a person has already ruled on — click one marked "needs review" or
+        "HM check" to try it.</p>
+    </section>
+
+    <section id="historySection">
+      <div class="section-head">
+        <span class="section-label"><span class="node-dot"></span>correction service → hubs table + location history</span>
+        <p class="section-note">Old value, new value, why, who — the record a database-backed correction leaves behind.</p>
+      </div>
+      <div class="log-list" id="logList">
+        <p class="log-empty">No corrections recorded yet. Run the validation job, then resolve a few hubs from the review queue.</p>
+      </div>
+    </section>
+  </div>
+
+  <footer class="page-foot">
+    rules ported from hubval/classify.py — agree_m, signals_agree_m, direct_update_km,
+    gross_error_km, gross_signals_agree_m and the high-confidence heartbeat carve-out all
+    match config.yaml as written. hub readings here are synthetic; nothing on this page
+    reads or writes real data.
+  </footer>
+</main>
+
+<aside class="review" id="reviewPanel" aria-hidden="true">
+  <button class="review-close" id="reviewClose">close ×</button>
+  <div>
+    <div class="review-id" id="revId">—</div>
+    <div class="review-status" id="revStatus">—</div>
+  </div>
+  <p class="review-reason" id="revReason"></p>
+  <div class="review-table" id="revTable"></div>
+  <div id="revActionWrap"></div>
+</aside>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------------- rule engine (ported from hubval/classify.py) ---------------- */
+
+  var RULES = {
+    agreeM: 100,
+    signalsAgreeM: 250,
+    directUpdateKm: 2,
+    grossErrorKm: 10,
+    grossSignalsAgreeM: 1000,
+    heartbeatAloneValidates: false,
+    highConfidence: { maxSpreadM: 10, minFixes: 5, minDays: 5, signalsAgreeM: 100 }
+  };
+
+  var EARTH_R = 6371008.8;
+  function haversineM(a, b) {
+    if (!a || !b) return null;
+    var p1 = a[0] * Math.PI / 180, p2 = b[0] * Math.PI / 180;
+    var dp = p2 - p1, dl = (b[1] - a[1]) * Math.PI / 180;
+    var h = Math.sin(dp / 2) * Math.sin(dp / 2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) * Math.sin(dl / 2);
+    return 2 * EARTH_R * Math.asin(Math.sqrt(h));
+  }
+  function within(d, limit) { return d !== null && d !== undefined && d <= limit; }
+
+  function isHighConfidence(hub) {
+    var hc = RULES.highConfidence;
+    return !!(hub.hb && hub.hbSpreadM !== null && hub.hbSpreadM <= hc.maxSpreadM &&
+      (hub.hbFixes || 0) >= hc.minFixes && (hub.hbDays || 0) >= hc.minDays);
+  }
+
+  var STATUSES = ['validated', 'update: ready', 'update: HM check', 'heartbeat only', 'needs review', 'insufficient data', 'no DB coordinate'];
+
+  function classify(hub) {
+    var db = hub.db, lba = hub.lba, hb = hub.hb;
+    var hbHigh = isHighConfidence(hub);
+    var signalsM = hbHigh ? RULES.highConfidence.signalsAgreeM : RULES.signalsAgreeM;
+    var dDbLba = haversineM(db, lba), dDbHb = haversineM(db, hb), dLbaHb = haversineM(lba, hb);
+    var signalsAgree = within(dLbaHb, signalsM);
+    var grossM = RULES.grossErrorKm * 1000;
+    if (!signalsAgree && dDbLba !== null && dDbHb !== null && dDbLba > grossM && dDbHb > grossM) {
+      signalsAgree = within(dLbaHb, RULES.grossSignalsAgreeM);
+    }
+    var out = { dDbLba: dDbLba, dDbHb: dDbHb, dLbaHb: dLbaHb, proposed: null, validatedBy: '', hbHigh: hbHigh, decidedBy: '' };
+    var hasLba = !!lba, hasHb = !!hb;
+
+    if (!db) {
+      out.status = 'no DB coordinate';
+      out.reason = 'hub has no coordinate in the DB';
+      if (signalsAgree) { out.proposed = lba; out.reason += '; LBA and heartbeat agree, LBA point proposed'; }
+      return out;
+    }
+    if (!hasLba && !hasHb) {
+      out.status = 'insufficient data';
+      out.reason = 'no usable LBA or heartbeat';
+      return out;
+    }
+    if (within(dDbLba, RULES.agreeM)) {
+      out.status = 'validated';
+      out.validatedBy = within(dDbHb, RULES.agreeM) ? 'LBA+heartbeat' : 'LBA';
+      out.reason = 'DB agrees with ' + out.validatedBy;
+      return out;
+    }
+    if (signalsAgree) {
+      out.proposed = lba;
+      var km = dDbLba / 1000;
+      if (km > RULES.directUpdateKm) {
+        out.status = 'update: ready';
+        out.reason = 'LBA and heartbeat agree; DB is ' + km.toFixed(1) + ' km off, beyond ' + RULES.directUpdateKm + ' km';
+      } else if (hbHigh) {
+        out.status = 'update: ready';
+        out.reason = 'LBA and a high-confidence heartbeat agree; DB is ' + Math.round(dDbLba) + ' m off';
+      } else {
+        out.status = 'update: HM check';
+        out.reason = 'LBA and heartbeat agree; DB is ' + Math.round(dDbLba) + ' m off';
+      }
+      return out;
+    }
+    if (!hasLba && within(dDbHb, RULES.signalsAgreeM)) {
+      if (hbHigh && within(dDbHb, RULES.agreeM)) {
+        out.status = 'validated'; out.validatedBy = 'high-confidence heartbeat';
+        out.reason = 'DB agrees with a high-confidence heartbeat';
+      } else if (RULES.heartbeatAloneValidates && within(dDbHb, RULES.agreeM)) {
+        out.status = 'validated'; out.validatedBy = 'heartbeat only';
+        out.reason = 'DB agrees with heartbeat';
+      } else {
+        out.status = 'heartbeat only';
+        out.reason = 'DB agrees with heartbeat; waiting for a high-precision heartbeat to validate';
+      }
+      return out;
+    }
+    out.status = 'needs review';
+    if (hasLba && hasHb) {
+      out.reason = within(dDbHb, RULES.agreeM)
+        ? 'DB agrees with heartbeat but not LBA, and LBA and heartbeat disagree'
+        : 'DB, LBA and heartbeat all disagree';
+    } else {
+      out.reason = 'only ' + (hasLba ? 'LBA' : 'heartbeat') + ' available, and it disagrees with the DB';
+    }
+    return out;
+  }
+
+  function applyHumanDecision(hub, result) {
+    if (!hub.humanAnswer) return result;
+    if (hub.humanAnswer === 'Database') {
+      result.status = 'validated'; result.validatedBy = 'human'; result.proposed = null;
+      result.reason = '"which is correct?" = Database (confirmed by reviewer)';
+    } else if (hub.humanAnswer === 'Verification App') {
+      var d = haversineM(hub.db, hub.lba);
+      if (d !== null && d <= RULES.agreeM) {
+        result.status = 'validated'; result.validatedBy = 'human'; result.proposed = null;
+        result.reason = '"which is correct?" = Verification App (confirmed by reviewer), within ' + RULES.agreeM + ' m of the DB';
+      } else {
+        result.status = 'update: ready'; result.validatedBy = ''; result.proposed = hub.lba;
+        result.reason = '"which is correct?" = Verification App (confirmed by reviewer)';
+      }
+    }
+    result.decidedBy = 'human';
+    return result;
+  }
+
+  /* ---------------- synthetic data generation ---------------- */
+
+  var REGIONS = [
+    { code: 'NGA', lat: 9.05, lng: 8.67 },
+    { code: 'TZA', lat: -6.37, lng: 34.89 }
+  ];
+
+  function offset(base, dn, de) {
+    var lat = base[0] + dn / 111320;
+    var lng = base[1] + de / (111320 * Math.cos(base[0] * Math.PI / 180));
+    return [lat, lng];
+  }
+  function pointAt(base, distM) {
+    var theta = Math.random() * 2 * Math.PI;
+    return offset(base, Math.cos(theta) * distM, Math.sin(theta) * distM);
+  }
+  function jitter(base, maxM) { return pointAt(base, Math.random() * maxM); }
+  function rand(min, max) { return min + Math.random() * (max - min); }
+  function randInt(min, max) { return Math.floor(rand(min, max + 1)); }
+
+  var SCENARIOS = {
+    tight: { w: 30, gen: function (base) {
+      var db = jitter(base, 40);
+      return { db: db, lba: jitter(db, 80), lbaAccuracy: randInt(5, 60),
+        hb: jitter(db, 200), hbFixes: randInt(4, 8), hbDays: randInt(3, 6), hbSpreadM: randInt(50, 220) };
+    } },
+    driftedFar: { w: 12, gen: function (base) {
+      var db = jitter(base, 30);
+      var truth = pointAt(db, rand(2500, 15000));
+      return { db: db, lba: jitter(truth, 60), lbaAccuracy: randInt(5, 50),
+        hb: jitter(truth, 150), hbFixes: randInt(5, 9), hbDays: randInt(4, 7), hbSpreadM: randInt(40, 150) };
+    } },
+    driftedNear: { w: 10, gen: function (base) {
+      var db = jitter(base, 30);
+      var truth = pointAt(db, rand(150, 1800));
+      return { db: db, lba: jitter(truth, 50), lbaAccuracy: randInt(5, 50),
+        hb: jitter(truth, 140), hbFixes: randInt(4, 8), hbDays: randInt(3, 6), hbSpreadM: randInt(40, 160) };
+    } },
+    grossError: { w: 6, gen: function (base) {
+      var db = jitter(base, 30);
+      var truth = pointAt(db, rand(12000, 40000));
+      return { db: db, lba: jitter(truth, 300), lbaAccuracy: randInt(20, 90),
+        hb: jitter(truth, 700), hbFixes: randInt(4, 7), hbDays: randInt(3, 6), hbSpreadM: randInt(100, 300) };
+    } },
+    hbOnly: { w: 8, gen: function (base) {
+      var db = jitter(base, 30);
+      return { db: db, lba: null, lbaAccuracy: null,
+        hb: jitter(db, 240), hbFixes: randInt(4, 5), hbDays: randInt(3, 4), hbSpreadM: randInt(150, 245) };
+    } },
+    hbHighConfidence: { w: 6, gen: function (base) {
+      var db = jitter(base, 30);
+      return { db: db, lba: null, lbaAccuracy: null,
+        hb: jitter(db, 60), hbFixes: randInt(5, 9), hbDays: randInt(5, 8), hbSpreadM: randInt(2, 9) };
+    } },
+    needsReview: { w: 12, gen: function (base) {
+      var db = jitter(base, 30);
+      return { db: db, lba: pointAt(db, rand(300, 3000)), lbaAccuracy: randInt(20, 90),
+        hb: pointAt(db, rand(300, 3000)), hbFixes: randInt(4, 7), hbDays: randInt(3, 6), hbSpreadM: randInt(100, 300) };
+    } },
+    insufficient: { w: 8, gen: function (base) {
+      return { db: jitter(base, 30), lba: null, lbaAccuracy: null, hb: null, hbFixes: 0, hbDays: 0, hbSpreadM: null };
+    } },
+    noDb: { w: 8, gen: function (base) {
+      var hasSignals = Math.random() < 0.6;
+      if (!hasSignals) return { db: null, lba: null, lbaAccuracy: null, hb: null, hbFixes: 0, hbDays: 0, hbSpreadM: null };
+      var truth = pointAt(base, rand(50, 400));
+      return { db: null, lba: jitter(truth, 60), lbaAccuracy: randInt(5, 50),
+        hb: jitter(truth, 150), hbFixes: randInt(4, 8), hbDays: randInt(3, 6), hbSpreadM: randInt(40, 180) };
+    } }
+  };
+  var SCENARIO_NAMES = Object.keys(SCENARIOS);
+  var SCENARIO_TOTAL = SCENARIO_NAMES.reduce(function (s, n) { return s + SCENARIOS[n].w; }, 0);
+  function pickScenario() {
+    var r = Math.random() * SCENARIO_TOTAL;
+    for (var i = 0; i < SCENARIO_NAMES.length; i++) {
+      var n = SCENARIO_NAMES[i];
+      r -= SCENARIOS[n].w;
+      if (r <= 0) return n;
+    }
+    return SCENARIO_NAMES[SCENARIO_NAMES.length - 1];
+  }
+
+  var HUB_COUNT = 28;
+  var state = { hubs: [], runCount: 0, syncCount: 0, logs: [] };
+
+  function makeHub(index) {
+    var region = REGIONS[index % 2];
+    var num = Math.floor(index / 2) + 1;
+    var id = region.code + '-' + String(num).padStart(3, '0');
+    var scenario = pickScenario();
+    var sig = SCENARIOS[scenario].gen([region.lat, region.lng]);
+    return {
+      id: id, scenario: scenario, humanAnswer: null,
+      db: sig.db, lba: sig.lba, hb: sig.hb,
+      lbaAccuracy: sig.lbaAccuracy, hbFixes: sig.hbFixes, hbDays: sig.hbDays, hbSpreadM: sig.hbSpreadM
+    };
+  }
+
+  function resyncHub(hub) {
+    var region = REGIONS.filter(function (r) { return hub.id.indexOf(r.code) === 0; })[0];
+    var base = hub.db || [region.lat, region.lng];
+    var sig = SCENARIOS[hub.scenario].gen(base);
+    // the DB coordinate itself doesn't move on its own between syncs
+    if (hub.db) sig.db = hub.db;
+    hub.lba = sig.lba; hub.hb = sig.hb; hub.lbaAccuracy = sig.lbaAccuracy;
+    hub.hbFixes = sig.hbFixes; hub.hbDays = sig.hbDays; hub.hbSpreadM = sig.hbSpreadM;
+    return hub;
+  }
+
+  /* ---------------- rendering ---------------- */
+
+  var bucketsEl = document.getElementById('buckets');
+  var flightLayer = document.getElementById('flightLayer');
+  var simulator = document.getElementById('simulator');
+  var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var LANE_META = {
+    'validated': 'DB agrees with LBA, or with a high-confidence heartbeat (≤100 m).',
+    'update: ready': 'LBA and heartbeat agree; DB is >2 km off — goes straight to the migration batch.',
+    'update: HM check': 'LBA and heartbeat agree; DB is off by <2 km — a hub manager confirms first.',
+    'heartbeat only': 'DB agrees with heartbeat (≤250 m), no LBA yet, or the heartbeat is not high-precision.',
+    'needs review': "Signals don't line up — held for a person to look at.",
+    'insufficient data': 'No usable LBA or heartbeat reading yet.',
+    'no DB coordinate': 'Hub has no coordinate in the database at all.'
+  };
+
+  STATUSES.forEach(function (status) {
+    var lane = document.createElement('div');
+    lane.className = 'lane';
+    lane.dataset.status = status;
+    lane.innerHTML =
+      '<div class="lane-head"><span class="lane-title">' + status + '</span><span class="lane-count" data-count>0</span></div>' +
+      '<p class="lane-rule">' + LANE_META[status] + '</p>' +
+      '<div class="lane-chips"></div>';
+    bucketsEl.appendChild(lane);
+  });
+
+  function laneChips(status) {
+    return bucketsEl.querySelector('.lane[data-status="' + cssEscape(status) + '"] .lane-chips');
+  }
+  function laneCount(status) {
+    return bucketsEl.querySelector('.lane[data-status="' + cssEscape(status) + '"] [data-count]');
+  }
+  function cssEscape(s) { return s.replace(/"/g, '\\"'); }
+
+  function fmtM(d) { return d === null || d === undefined ? '—' : (d < 1000 ? Math.round(d) + ' m' : (d / 1000).toFixed(2) + ' km'); }
+
+  function renderChip(hub) {
+    var chip = document.createElement('button');
+    chip.className = 'chip' + (hub.humanAnswer ? ' human' : '');
+    chip.textContent = hub.id.split('-')[1];
+    chip.title = hub.id + ' — ' + hub.result.status;
+    chip.addEventListener('click', function () { openReview(hub.id); });
+    chip.dataset.hub = hub.id;
+    return chip;
+  }
+
+  function updateCounts() {
+    var counts = {};
+    STATUSES.forEach(function (s) { counts[s] = 0; });
+    state.hubs.forEach(function (h) { counts[h.result.status]++; });
+    STATUSES.forEach(function (s) { laneCount(s).textContent = counts[s]; });
+
+    var total = state.hubs.length;
+    var validated = counts['validated'];
+    var migration = counts['update: ready'] + counts['update: HM check'];
+    var review = counts['needs review'];
+    var human = state.hubs.filter(function (h) { return !!h.humanAnswer; }).length;
+
+    document.getElementById('kpiTotal').textContent = total;
+    document.getElementById('kpiValidated').textContent = total ? Math.round(100 * validated / total) + '%' : '—';
+    document.getElementById('kpiMigration').textContent = migration;
+    document.getElementById('kpiReview').textContent = review;
+    document.getElementById('kpiHuman').textContent = human;
+    document.getElementById('readingsMeta').textContent = total
+      ? total + ' hubs · source, coordinates, accuracy, device'
+      : 'no hubs generated yet';
+  }
+
+  function clearLanes() {
+    STATUSES.forEach(function (s) { laneChips(s).innerHTML = ''; });
+  }
+
+  function placeAllChips() {
+    clearLanes();
+    state.hubs.forEach(function (h) { laneChips(h.result.status).appendChild(renderChip(h)); });
+    updateCounts();
+  }
+
+  function flyChipsIn(hubs, done) {
+    if (reducedMotion || !hubs.length) { placeAllChips(); if (done) done(); return; }
+    clearLanes();
+    STATUSES.forEach(function (s) { laneCount(s).textContent = '0'; });
+    var simRect = simulator.getBoundingClientRect();
+    var sourceRect = document.querySelector('.rules-box').getBoundingClientRect();
+    var startX = sourceRect.left + sourceRect.width / 2 - simRect.left - 12;
+    var startY = sourceRect.top + sourceRect.height / 2 - simRect.top - 12;
+
+    var remaining = hubs.length;
+    hubs.forEach(function (hub, i) {
+      setTimeout(function () {
+        var target = laneChips(hub.result.status);
+        var targetRect = target.getBoundingClientRect();
+        var tx = targetRect.left - simRect.left + 10 - startX;
+        var ty = targetRect.top - simRect.top + 10 - startY;
+
+        var ghost = document.createElement('div');
+        ghost.className = 'flying-chip';
+        ghost.style.transform = 'translate(' + startX + 'px,' + startY + 'px)';
+        flightLayer.appendChild(ghost);
+
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            ghost.style.transform = 'translate(' + tx + 'px,' + ty + 'px)';
+          });
+        });
+
+        ghost.addEventListener('transitionend', function handler(e) {
+          if (e.propertyName !== 'transform') return;
+          ghost.removeEventListener('transitionend', handler);
+          ghost.style.opacity = '0';
+          target.appendChild(renderChip(hub));
+          laneCount(hub.result.status).textContent = parseInt(laneCount(hub.result.status).textContent || '0', 10) + 1;
+          setTimeout(function () { ghost.remove(); }, 180);
+          remaining--;
+          if (remaining === 0) { updateCounts(); if (done) done(); }
+        });
+      }, i * 22);
+    });
+  }
+
+  /* ---------------- log ---------------- */
+
+  function addLog(hub, prevStatus, who) {
+    state.logs.unshift({ hub: hub.id, from: prevStatus, to: hub.result.status, who: who, t: Date.now() });
+    renderLog();
+  }
+
+  function renderLog() {
+    var list = document.getElementById('logList');
+    if (!state.logs.length) {
+      list.innerHTML = '<p class="log-empty">No corrections recorded yet. Run the validation job, then resolve a few hubs from the review queue.</p>';
+      return;
+    }
+    list.innerHTML = state.logs.slice(0, 40).map(function (l) {
+      return '<div class="log-row">' +
+        '<span class="log-time">' + relTime(l.t) + '</span>' +
+        '<span class="log-body"><b>' + l.hub + '</b> moved <code style="font-family:var(--font-code)">' + l.from + '</code> → <code style="font-family:var(--font-code)">' + l.to + '</code></span>' +
+        '<span class="log-who">' + l.who + '</span>' +
+        '</div>';
+    }).join('');
+  }
+  function relTime(t) {
+    var s = Math.round((Date.now() - t) / 1000);
+    if (s < 5) return 'just now';
+    if (s < 60) return s + 's ago';
+    var m = Math.round(s / 60);
+    return m + 'm ago';
+  }
+  setInterval(renderLog, 15000);
+
+  /* ---------------- review panel ---------------- */
+
+  var reviewPanel = document.getElementById('reviewPanel');
+  var scrim = document.getElementById('scrim');
+
+  function openReview(hubId) {
+    var hub = state.hubs.filter(function (h) { return h.id === hubId; })[0];
+    if (!hub) return;
+    var r = hub.result;
+
+    document.getElementById('revId').textContent = hub.id + ' · ' + hub.scenario.replace(/([A-Z])/g, ' $1').toLowerCase();
+    document.getElementById('revStatus').textContent = r.status;
+    document.getElementById('revReason').textContent = r.reason + '.';
+
+    var rows = [
+      ['DB coordinate', hub.db ? hub.db[0].toFixed(5) + ', ' + hub.db[1].toFixed(5) : '— none —'],
+      ['LBA (staff submission)', hub.lba ? hub.lba[0].toFixed(5) + ', ' + hub.lba[1].toFixed(5) + ' (±' + hub.lbaAccuracy + ' m)' : '— none —'],
+      ['heartbeat (phone GPS)', hub.hb ? hub.hb[0].toFixed(5) + ', ' + hub.hb[1].toFixed(5) : '— none —'],
+      ['heartbeat fixes / days', hub.hb ? hub.hbFixes + ' fixes over ' + hub.hbDays + ' days, spread ' + hub.hbSpreadM + ' m' : '—'],
+      ['high-confidence heartbeat', r.hbHigh ? 'yes' : 'no'],
+      ['DB ↔ LBA', fmtM(r.dDbLba)],
+      ['DB ↔ heartbeat', fmtM(r.dDbHb)],
+      ['LBA ↔ heartbeat', fmtM(r.dLbaHb)],
+      ['proposed coordinate', r.proposed ? r.proposed[0].toFixed(5) + ', ' + r.proposed[1].toFixed(5) : '—'],
+      ['decided by', r.decidedBy === 'human' ? 'human reviewer' : 'validation job']
+    ];
+    document.getElementById('revTable').innerHTML = rows.map(function (row) {
+      return '<div class="r"><span>' + row[0] + '</span><span>' + row[1] + '</span></div>';
+    }).join('');
+
+    var wrap = document.getElementById('revActionWrap');
+    wrap.innerHTML = '';
+    if (hub.humanAnswer) {
+      var d = document.createElement('div');
+      d.className = 'review-decided';
+      d.textContent = 'A reviewer already confirmed "' + hub.humanAnswer + '" for this hub. New readings on the next sync won’t move it.';
+      wrap.appendChild(d);
+    } else if (r.status === 'needs review' || r.status === 'update: HM check') {
+      var actions = document.createElement('div');
+      actions.className = 'review-actions';
+      var hint = document.createElement('p');
+      hint.className = 'review-hint';
+      hint.textContent = 'This mirrors the review page’s "which is correct?" — in the real app a hub manager confirms the suggested pin or drops their own on a map.';
+      var btnDb = document.createElement('button');
+      btnDb.className = 'btn';
+      btnDb.textContent = 'confirm: database is correct';
+      btnDb.addEventListener('click', function () { resolveHub(hub.id, 'Database'); });
+      actions.appendChild(btnDb);
+      if (hub.lba) {
+        var btnApp = document.createElement('button');
+        btnApp.className = 'btn primary';
+        btnApp.textContent = 'confirm: verification app is correct';
+        btnApp.addEventListener('click', function () { resolveHub(hub.id, 'Verification App'); });
+        actions.appendChild(btnApp);
+      }
+      wrap.appendChild(actions);
+      wrap.appendChild(hint);
+    } else {
+      var NOTES = {
+        'validated': 'Already agrees with the database — nothing for a person to do.',
+        'update: ready': 'LBA and heartbeat already agree and the DB is far enough off that this skips the HM check and goes straight to the correction service.'
+      };
+      var note = document.createElement('p');
+      note.className = 'review-hint';
+      note.textContent = NOTES[r.status] || 'Not enough signal yet for a person to act on — this hub is waiting on a new reading.';
+      wrap.appendChild(note);
+    }
+
+    reviewPanel.classList.add('open');
+    reviewPanel.setAttribute('aria-hidden', 'false');
+    scrim.classList.add('open');
+    reviewPanel.dataset.hub = hub.id;
+  }
+
+  function closeReview() {
+    reviewPanel.classList.remove('open');
+    reviewPanel.setAttribute('aria-hidden', 'true');
+    scrim.classList.remove('open');
+  }
+  document.getElementById('reviewClose').addEventListener('click', closeReview);
+  scrim.addEventListener('click', closeReview);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeReview(); });
+
+  function resolveHub(hubId, answer) {
+    var hub = state.hubs.filter(function (h) { return h.id === hubId; })[0];
+    if (!hub) return;
+    var prevStatus = hub.result.status;
+    hub.humanAnswer = answer;
+    hub.result = applyHumanDecision(hub, classify(hub));
+
+    var oldChip = bucketsEl.querySelector('.chip[data-hub="' + hub.id + '"]');
+    if (oldChip) oldChip.remove();
+    laneChips(hub.result.status).appendChild(renderChip(hub));
+    updateCounts();
+    addLog(hub, prevStatus, 'you (reviewer)');
+    openReview(hubId);
+  }
+
+  /* ---------------- run / sync / reset ---------------- */
+
+  var runBtn = document.getElementById('runBtn');
+  var syncBtn = document.getElementById('syncBtn');
+  var resetBtn = document.getElementById('resetBtn');
+  var runMeta = document.getElementById('runMeta');
+
+  function runValidation() {
+    runBtn.disabled = true;
+    state.hubs = [];
+    for (var i = 0; i < HUB_COUNT; i++) state.hubs.push(makeHub(i));
+    state.hubs.forEach(function (h) { h.result = applyHumanDecision(h, classify(h)); });
+    state.runCount++;
+    document.getElementById('kpiTotal').textContent = state.hubs.length;
+    flyChipsIn(state.hubs, function () {
+      runBtn.disabled = false;
+      syncBtn.disabled = false;
+      resetBtn.disabled = false;
+      runMeta.textContent = 'run #' + state.runCount + ' · ' + HUB_COUNT + ' hubs classified';
+    });
+  }
+
+  function simulateSync() {
+    syncBtn.disabled = true;
+    state.hubs.forEach(function (h) {
+      var prevStatus = h.result.status;
+      resyncHub(h); // fresh readings arrive for every hub; a human decision still wins below
+      h.result = applyHumanDecision(h, classify(h));
+      if (h.result.status !== prevStatus) addLog(h, prevStatus, h.humanAnswer ? 'preserved (human)' : 'validation job');
+    });
+    state.syncCount++;
+    flyChipsIn(state.hubs, function () {
+      syncBtn.disabled = false;
+      var human = state.hubs.filter(function (h) { return h.humanAnswer; }).length;
+      runMeta.textContent = 'sync #' + state.syncCount + ' · new readings pulled in · ' + human + ' human decisions held';
+    });
+  }
+
+  function resetAll() {
+    state = { hubs: [], runCount: 0, syncCount: 0, logs: [] };
+    clearLanes();
+    updateCounts();
+    renderLog();
+    runBtn.disabled = false;
+    syncBtn.disabled = true;
+    resetBtn.disabled = true;
+    runMeta.textContent = '—';
+    closeReview();
+  }
+
+  runBtn.addEventListener('click', runValidation);
+  syncBtn.addEventListener('click', simulateSync);
+  resetBtn.addEventListener('click', resetAll);
+
+  updateCounts();
+})();
+</script>

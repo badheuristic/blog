@@ -1,0 +1,27 @@
+---
+// Talks to demo frames in a post (demos/embed.js on the other side): sends them the
+// theme, now and on every switch, and grows each frame to the height its page reports.
+---
+
+<script>
+  const frames = () => [...document.querySelectorAll<HTMLIFrameElement>('iframe[data-demo]')]
+
+  const sendTheme = (frame: HTMLIFrameElement) =>
+    frame.contentWindow?.postMessage(
+      { type: 'blog:theme', theme: document.documentElement.dataset.theme },
+      location.origin,
+    )
+
+  window.addEventListener('message', (e) => {
+    if (e.origin !== location.origin) return
+    const frame = frames().find((f) => f.contentWindow === e.source)
+    if (!frame) return
+    if (e.data?.type === 'blog:ready') sendTheme(frame)
+    if (e.data?.type === 'blog:height' && typeof e.data.height === 'number') frame.style.height = `${e.data.height}px`
+  })
+
+  new MutationObserver(() => frames().forEach(sendTheme)).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme'],
+  })
+</script>

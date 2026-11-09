@@ -1,0 +1,19 @@
+---
+// Wraps a rendered post and puts each diagram's SVG into the placeholder lib/embeds.ts
+// left for it. Read from disk on every render (paths from the project root, where astro
+// runs), so in dev a changed diagram shows on the next load; lib/embedFiles.ts reloads
+// the browser when one changes.
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
+const svg = (src: string) =>
+  readFileSync(join(process.cwd(), 'src/content/diagrams', `${src}.svg`), 'utf8').replace(/<\?xml[^>]*>\s*/, '')
+
+const html = await Astro.slots.render('default')
+const withDiagrams = html.replace(
+  /<div class="diagramScroll" data-diagram="([\w-]+)"><\/div>/g,
+  (_, src: string) => `<div class="diagramScroll">${svg(src)}</div>`,
+)
+---
+
+<Fragment set:html={withDiagrams} />
