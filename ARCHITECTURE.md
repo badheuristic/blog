@@ -109,7 +109,7 @@ Beyond plain markdown (`lib/embeds.ts`):
 ![alt text](./photo.png "A caption")     image with a title: a figure with a caption
 
 ```demo
-src: hub-location                        an interactive page in demos/hub-location/
+src: tile-sort                           an interactive page in demos/tile-sort/
 caption: The validation tool, simulated.
 height: 1600                             optional, its height until it reports one
 ```
@@ -160,10 +160,9 @@ Each step leaves a working blog.
    - The cursor's dot and trail have their own `view-transition-name`, so they stay on
      top during the theme dissolve and page reveal.
    - Chrome and Safari 18.2+ run the reveal; Firefox navigates normally.
-3. ✅ **Rich posts.** Images with captions, embedded interactive demos (the hub location
-   simulation from `../blogpost/demo`), grayscale diagrams (the architecture diagram
-   from `../blogpost`, redrawn). See Posts above.
-
+3. ✅ **Rich posts.** Images with captions, embedded interactive demos (none in use yet),
+   grayscale diagrams (the architecture diagram from `../blogpost`, redrawn). See Posts
+   above.
 4. ✅ **Extras.** Tag pages, link previews (Open Graph images), a table of contents for long
    posts.
 5. **Polish and deploy.** Accessibility, performance, the real URLs in `src/config.ts`,
@@ -173,5 +172,3 @@ Each step leaves a working blog.
 
 - **Hosting and URL.** A subdomain (`blog.<domain>`) or somewhere else? `src/config.ts`
   holds placeholders until then.
-- **The hub location demo** draws 1px gaps between tiles in `--fg-faint`, which read as
-  borders. It's left as written; worth a pass before the entry goes public.

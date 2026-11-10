@@ -14,12 +14,6 @@ We were already using spreadsheets to inspect the existing data, so extending th
 
 Initially, I downloaded the data manually, ran the tool, and copied the results back. Within about a week, I had automated that process using a lightweight script that moved data between the tool and the spreadsheet on a regular schedule. The spreadsheet acted as both a report and an interface between the automated processing and the people responsible for reviewing the results. A problem though with my method of copying back the results was that human input was overwritten. I knew this would happen so I separated the human decisions from the automated outputs and incorporated this human input in subsequent runs. This also gave us a record of past decisions and a way to determine whether they still applied when the underlying data changed.
 
-```demo
-src: hub-location
-caption: The validation tool, simulated.
-height: 1600
-```
-
 I'm proud of taking ownership of this part of the project in the way that I did but, a spreadsheet has obvious limitations. It was suitable for coordinating a workflow that was still evolving but it's definitely not enough to store business data indefinitely. I think that goes without saying. The actual coordinates, the actual underlying location readings, and the permanent record of changes need stronger guarantees and those belong in the production database. The spreadsheet was only chosen to accelerate the correction process with specific time and resource constraints.
 
 The next phase is moving the parts that need to last out of the spreadsheet and into the main application. The validated location readings will be stored in the database with their source, so each correction can point to the evidence behind it. Corrections will be applied in small batches (with dry-runs first) that only change a hub if its location is still what we expected and every change will be permanently recorded. Reviews will move to a page in the application where reviewers confirm suggested location on a map or place a pin themselves. Once that's done, the spreadsheet will have served its purpose.
