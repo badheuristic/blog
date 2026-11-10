@@ -3,8 +3,12 @@ title: spreadsheets as a backend, on purpose
 date: 2026-11-04
 summary: Why a validation workflow for hub locations ran on a spreadsheet for a while, and what moves into the main application next.
 tags: [data, workflow]
-draft: true
 ---
+
+```diagram
+src: hub-architecture
+caption: Where it's heading: the parts that need to last, in the main application.
+```
 
 My team has been working on a long-term project to correct inaccurate hub location data in our database. We have a number of hubs scattered around a few remote locations, and the lack of accurate location data has been a compounding problem that has affected the company's ability to efficiently organize its operations. I am part of a small "task force" that was assigned to addressing this. To push us towards our goal, I built a validation tool that compares recorded locations against site staff submissions and GPS readings from the hubs' own designated phones. Both data sources had to be developed as part of the project. The tool uses them to classify hubs as ready for updates, requiring review, or needing further investigation.
 
@@ -17,8 +21,3 @@ Initially, I downloaded the data manually, ran the tool, and copied the results 
 I'm proud of taking ownership of this part of the project in the way that I did but, a spreadsheet has obvious limitations. It was suitable for coordinating a workflow that was still evolving but it's definitely not enough to store business data indefinitely. I think that goes without saying. The actual coordinates, the actual underlying location readings, and the permanent record of changes need stronger guarantees and those belong in the production database. The spreadsheet was only chosen to accelerate the correction process with specific time and resource constraints.
 
 The next phase is moving the parts that need to last out of the spreadsheet and into the main application. The validated location readings will be stored in the database with their source, so each correction can point to the evidence behind it. Corrections will be applied in small batches (with dry-runs first) that only change a hub if its location is still what we expected and every change will be permanently recorded. Reviews will move to a page in the application where reviewers confirm suggested location on a map or place a pin themselves. Once that's done, the spreadsheet will have served its purpose.
-
-```diagram
-src: hub-architecture
-caption: Where it's heading: the parts that need to last, in the main application.
-```
