@@ -1,4 +1,5 @@
 import { getCollection, type CollectionEntry } from 'astro:content'
+import { href } from './url'
 
 export type Section = 'posts' | 'diary'
 export type Entry = CollectionEntry<Section>
@@ -7,13 +8,13 @@ export type Entry = CollectionEntry<Section>
 export const sections: Record<Section, { label: string; path: string; intro: string; backdrop: string }> = {
   posts: {
     label: 'posts',
-    path: '/',
+    path: href('/'),
     intro: 'Notes on things I build and how.',
     backdrop: 'blog',
   },
   diary: {
     label: 'diary',
-    path: '/diary/',
+    path: href('/diary/'),
     intro: 'Looser notes from along the way.',
     backdrop: 'diary',
   },
@@ -25,8 +26,8 @@ export async function getEntries(section: Section): Promise<Entry[]> {
   return entries.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
 }
 
-/** Where an entry is served: /posts/<file name>/ or /diary/<file name>/. */
-export const entryUrl = (entry: Entry) => `/${entry.collection}/${entry.id}/`
+/** Where an entry is served: /blog/posts/<file name>/ or /blog/diary/<file name>/. */
+export const entryUrl = (entry: Entry) => href(`/${entry.collection}/${entry.id}/`)
 
 /** Minutes to read, at about 220 words a minute, never less than one. */
 export function readingTime(entry: Entry): number {
@@ -56,7 +57,7 @@ export const tagSlug = (tag: string) =>
     .replace(/^-|-$/g, '')
 
 /** Where a tag's page is. */
-export const tagUrl = (tag: string) => `/tags/${tagSlug(tag)}/`
+export const tagUrl = (tag: string) => href(`/tags/${tagSlug(tag)}/`)
 
 /** Every tag in both sections, with its entries (newest first), most used first. */
 export async function getTags(): Promise<{ tag: string; slug: string; entries: Entry[] }[]> {

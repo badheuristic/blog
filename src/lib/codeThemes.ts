@@ -59,15 +59,15 @@ function mono(name: string, type: 'light' | 'dark', s: Shades) {
 export const codeLight = mono('mono-light', 'light', {
   bg: '#f3f3f3',
   c1: '#000000',
-  c2: '#4a4a4a',
-  c3: '#7a7a7a',
-  c4: '#a3a3a3',
+  c2: '#333333',
+  c3: '#555555',
+  c4: '#6e6e6e',
 })
 
 export const codeDark = mono('mono-dark', 'dark', {
   bg: '#2a2a2a',
   c1: '#ffffff',
   c2: '#d4d4d4',
-  c3: '#a8a8a8',
-  c4: '#7c7c7c',
+  c3: '#b4b4b4',
+  c4: '#969696',
 })

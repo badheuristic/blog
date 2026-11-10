@@ -2,6 +2,7 @@ import { cpSync, existsSync, readFileSync, readdirSync, statSync, watch, type FS
 import { extname, join, normalize, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { AstroIntegration } from 'astro'
+import { href } from './url'
 
 // Files that posts embed (lib/embeds.ts) but that live outside the markdown:
 //
@@ -71,7 +72,9 @@ export function embedFiles(): AstroIntegration {
           }, 100)
         })
         server.middlewares.use((req, res, next) => {
-          const url = decodeURIComponent((req.url ?? '').split('?')[0])
+          // Astro has usually taken the base (/blog) off by now, but not always.
+          let url = decodeURIComponent((req.url ?? '').split('?')[0])
+          if (url.startsWith(href('/'))) url = url.slice(href('').length)
           if (!url.startsWith('/demos/')) return next()
           let path = normalize(join(DEMOS, url.slice('/demos/'.length)))
           if (!path.startsWith(DEMOS)) return next()

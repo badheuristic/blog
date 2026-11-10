@@ -7,6 +7,7 @@ import '../styles/prose.css'
 import DemoFrames from '../components/DemoFrames.astro'
 import Diagrams from '../components/Diagrams.astro'
 import Toc from '../components/Toc.astro'
+import { href } from '../lib/url'
 import Base from './Base.astro'
 
 interface Props {
@@ -21,7 +22,7 @@ const { Content, headings } = await render(entry)
 const { title, summary, date, updated, tags, draft } = entry.data
 ---
 
-<Base title={title} description={summary} backdrop={section.backdrop} image={`/og/${entry.collection}/${entry.id}.png`} article>
+<Base title={title} description={summary} backdrop={section.backdrop} image={href(`/og/${entry.collection}/${entry.id}.png`)} article>
   <article>
     <header class="head">
       <a href={section.path} class="back"><span aria-hidden="true">←</span> {section.label}</a>

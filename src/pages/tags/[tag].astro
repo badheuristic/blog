@@ -3,6 +3,7 @@
 import EntryRows from '../../components/EntryRows.astro'
 import Base from '../../layouts/Base.astro'
 import { getTags, type Entry } from '../../lib/posts'
+import { href } from '../../lib/url'
 
 export async function getStaticPaths() {
   const tags = await getTags()
@@ -19,7 +20,7 @@ const count = entries.length === 1 ? 'one entry' : `${entries.length} entries`
 ---
 
 <Base title={tag} description={`Posts and diary entries tagged ${tag}.`} backdrop="tags">
-  <a href="/tags/" class="back"><span aria-hidden="true">←</span> tags</a>
+  <a href={href('/tags/')} class="back"><span aria-hidden="true">←</span> tags</a>
   <h1 class="title">{tag}</h1>
   <p class="intro">{count}</p>
   <EntryRows entries={entries} showSection />

@@ -13,6 +13,7 @@ const { section } = Astro.props
 const entries = await getEntries(section)
 ---
 
+<h1 class="sr-only">{sections[section].label}</h1>
 <SectionSwitch current={section} />
 <p class="intro">{sections[section].intro}</p>
 <EntryRows entries={entries} />

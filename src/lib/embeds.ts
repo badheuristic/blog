@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import type { Code } from 'mdast'
 import { defineMdastPlugin } from 'satteri'
+import { href } from './url'
 
 // Markdown extras for posts, without moving to MDX (a Sätteri plugin, Astro 7's
 // markdown processor):
@@ -43,7 +44,7 @@ const caption = (text: string | undefined, extra = '') =>
 function demo(code: Code): string {
   const { src, caption: text, height = '720' } = fields(code)
   if (!src || !/^[\w-]+$/.test(src)) throw new Error(`demo fence needs a src (a folder in demos/), got "${src}"`)
-  const url = `/demos/${src}/`
+  const url = href(`/demos/${src}/`)
   const open = `<a class="open" href="${url}" target="_blank" rel="noopener">open on its own <span aria-hidden="true">↗</span></a>`
   return (
     `<figure class="wide demo">` +

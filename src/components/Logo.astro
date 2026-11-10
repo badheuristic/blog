@@ -1,8 +1,9 @@
 ---
 // Same mark as the main site; here it leads back to the blog's index.
+import { href } from '../lib/url'
 ---
 
-<a href="/" class="logo" aria-label="Blog home">
+<a href={href('/')} class="logo" aria-label="Blog home">
   ch<span class="brace">{'{'}</span>
   <!-- Drawn instead of typed: Iosevka Aile renders ✱ as a dot. -->
   <svg class="star" viewBox="-10 -10 20 20" aria-hidden="true">

@@ -16,6 +16,7 @@ const sharpLoads = await import('sharp').then(
 
 export default defineConfig({
   site: config.url,
+  base: config.base,
   integrations: [sitemap(), embedFiles()],
   image: sharpLoads ? {} : { service: passthroughImageService() },
   markdown: {

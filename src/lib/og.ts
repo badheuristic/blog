@@ -13,7 +13,7 @@ export const HEIGHT = 630
 // Light theme tokens (src/styles/tokens.css).
 const BG = '#ffffff'
 const FG = '#000000'
-const MUTED = '#7a7a7a'
+const MUTED = '#6e6e6e'
 const FAINT = '#dcdcdc'
 const TITLE_FAINT = '#ededed'
 const PARTICLE = 'rgba(0, 0, 0, 0.13)'

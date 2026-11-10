@@ -2,8 +2,9 @@
 import EntryList from '../../components/EntryList.astro'
 import Base from '../../layouts/Base.astro'
 import { sections } from '../../lib/posts'
+import { href } from '../../lib/url'
 ---
 
-<Base title="diary" description={sections.diary.intro} backdrop={sections.diary.backdrop} image="/og/diary.png">
+<Base title="diary" description={sections.diary.intro} backdrop={sections.diary.backdrop} image={href('/og/diary.png')}>
   <EntryList section="diary" />
 </Base>

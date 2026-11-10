@@ -5,7 +5,7 @@
   /* Theme: light (default) */
   --bg: #ffffff;
   --fg: #000000;
-  --fg-muted: #7a7a7a;
+  --fg-muted: #6e6e6e;
   --fg-faint: #dcdcdc;
   --title-faint: #ededed;
   --surface: #d9d9d9;
@@ -19,11 +19,12 @@
 
   /* Blog: a quiet flat fill behind code, a step off the page in either theme. */
   --code-bg: #f3f3f3;
-  /* Blog: code token shades, darkest to lightest (comments). */
+  /* Blog: code token shades, darkest to lightest (comments). All at least 4.5:1 on
+     --code-bg, so even comments pass WCAG AA. */
   --code-1: #000000;
-  --code-2: #4a4a4a;
-  --code-3: #7a7a7a;
-  --code-4: #a3a3a3;
+  --code-2: #333333;
+  --code-3: #555555;
+  --code-4: #6e6e6e;
   /* Blog: diagram fills, three steps apart in either theme: what's stored (darkest),
      where people act, and sources or processes (lightest). Each with its text color. */
   --diagram-store: #1c1c1c;
@@ -91,8 +92,8 @@
   --code-bg: #2a2a2a;
   --code-1: #ffffff;
   --code-2: #d4d4d4;
-  --code-3: #a8a8a8;
-  --code-4: #7c7c7c;
+  --code-3: #b4b4b4;
+  --code-4: #969696;
   --diagram-store: #e6e6e6;
   --diagram-on-store: #111111;
   --diagram-act: #6a6a6a;

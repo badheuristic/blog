@@ -24,6 +24,19 @@ of a long post (no mascot, no section stepping, native scroll).
   gets optimized images.
 - **bun** for packages and scripts, as on the main site.
 
+## Hosting
+
+GitHub Pages, from the `blog` repo, so it's served at `badheuristic.github.io/blog`, on
+the same origin as the main site (which links to it from its header). A push to `main`
+builds and deploys it (`.github/workflows/deploy.yml`).
+
+Because of the `/blog` prefix (`base` in `src/config.ts`), links inside the blog's code go
+through `href()` in `src/lib/url.ts`. In a post, link to another entry relatively
+(`../other-post/`) or with the prefix (`/blog/posts/other-post/`).
+
+Sharing the origin also means the blog and the main site share the stored theme
+(`localStorage` key `theme`), so switching on one carries over to the other.
+
 ## Shared with the main site
 
 Copied, not linked, so each project builds on its own. If one changes, update the other.
@@ -32,11 +45,12 @@ Copied, not linked, so each project builds on its own. If one changes, update th
 |---|---|---|
 | tokens | `src/styles/tokens.css` | `src/styles/tokens.css` |
 | reset and base type | `src/styles/global.css` | `src/styles/global.css` |
-| font subsets | `src/assets/fonts`, `scripts/subset-fonts.sh` | same |
+| font subsets | `src/assets/fonts`, `scripts/subset-fonts.sh` (also subsets the code font) | same |
 | logo | `components/Logo.astro` | `components/chrome/Logo.tsx` |
 | theme switch and dissolve | `components/ThemeSwitch.astro`, `lib/theme.ts`, `lib/themeDissolve.ts` | `ThemeSwitch.tsx`, `useTheme.ts`, `themeDissolve.ts` |
 
-Blog-only tokens: `--code-bg` and `--code-1`…`--code-4` (code fill and shades),
+Blog-only tokens: `--code-bg` and `--code-1`…`--code-4` (code fill and shades, all
+at least 4.5:1 on the fill),
 `--text-title` (post titles, a step under the display size) and `--measure` (62ch).
 
 ## Layout
@@ -165,10 +179,10 @@ Each step leaves a working blog.
    above.
 4. ✅ **Extras.** Tag pages, link previews (Open Graph images), a table of contents for long
    posts.
-5. **Polish and deploy.** Accessibility, performance, the real URLs in `src/config.ts`,
-   and linking it from the main site's header.
-
-## Open questions
-
-- **Hosting and URL.** A subdomain (`blog.<domain>`) or somewhere else? `src/config.ts`
-  holds placeholders until then.
+5. ✅ **Polish and deploy.**
+   - Accessibility: a skip link, a hidden `h1` on the lists, and grays that meet WCAG
+     AA (the muted gray went from `#7a7a7a` to `#6e6e6e` here and on the main site;
+     the code shades pass on the code fill).
+   - Performance: the code font is subset like the text fonts (about 90KB a style instead
+     of 1MB), and the Light text face is preloaded.
+   - The real URLs, the GitHub Pages workflow, and the main site's `Blog` link.
