@@ -1,26 +1,30 @@
 ---
-// `posts / diary` at the top of the lists: the current section at full contrast, the
-// other muted, like the theme switch.
+// `posts / diary / tags` at the top of the lists: the current one at full contrast, the
+// others muted, like the theme switch.
 import { sections, type Section } from '../lib/posts'
 
 interface Props {
-  current: Section
+  current: Section | 'tags'
 }
 const { current } = Astro.props
-const order: Section[] = ['posts', 'diary']
+const options = [
+  { key: 'posts', ...sections.posts },
+  { key: 'diary', ...sections.diary },
+  { key: 'tags', label: 'tags', path: '/tags/' },
+]
 ---
 
 <nav class="switch" aria-label="Sections">
   {
-    order.map((section, i) => (
+    options.map((option, i) => (
       <>
         {i > 0 && (
           <span class="divider" aria-hidden="true">
             /
           </span>
         )}
-        <a href={sections[section].path} class="option" aria-current={section === current ? 'page' : undefined}>
-          {sections[section].label}
+        <a href={option.path} class="option" aria-current={option.key === current ? 'page' : undefined}>
+          {option.label}
         </a>
       </>
     ))

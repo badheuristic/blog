@@ -1,0 +1,69 @@
+---
+// Every tag, most used first, each with how many entries carry it.
+import SectionSwitch from '../../components/SectionSwitch.astro'
+import Base from '../../layouts/Base.astro'
+import { getTags, tagUrl } from '../../lib/posts'
+
+const tags = await getTags()
+---
+
+<Base title="tags" description="Everything on the blog, by tag." backdrop="tags">
+  <SectionSwitch current="tags" />
+  <p class="intro">Posts and diary entries, by what they're about.</p>
+  {
+    tags.length === 0 ? (
+      <p class="intro">No tags yet.</p>
+    ) : (
+      <ul class="tags">
+        {tags.map(({ tag, entries }) => (
+          <li>
+            <a href={tagUrl(tag)} class="tag">
+              {tag}
+              <span class="count">{entries.length}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</Base>
+
+<style>
+  .intro {
+    max-width: var(--measure);
+    margin-top: 1rem;
+    color: var(--fg-muted);
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 2rem;
+    margin-top: 4rem;
+    list-style: none;
+    font-size: var(--text-lg);
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.4em;
+    transition: translate var(--dur) var(--ease-out);
+  }
+
+  .count {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-regular);
+    color: var(--fg-muted);
+    font-variant-numeric: tabular-nums;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .tag:hover {
+    translate: 0.4rem 0;
+  }
+
+  .tag:hover .count {
+    color: var(--fg);
+  }
+</style>

@@ -2,7 +2,7 @@
 title: lorem ipsum dolor sit amet
 date: 2026-10-20
 summary: A placeholder post that uses every kind of block a post can have, to check the type.
-tags: [placeholder]
+tags: [placeholder, typography]
 ---
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud [exercitation ullamco](#) laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in *reprehenderit* in voluptate velit esse **cillum dolore** eu fugiat nulla pariatur.[^1]
@@ -33,6 +33,8 @@ export async function ipsum(dolor: string[], limit = 3): Promise<number> {
 2. Quam nihil molestiae consequatur
 3. Vel illum qui dolorem eum fugiat quo voluptas nulla pariatur
 
+## Neque porro quisquam
+
 > At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti.
 
 | source | readings | agree |
@@ -42,6 +44,8 @@ export async function ipsum(dolor: string[], limit = 3): Promise<number> {
 | dolor | 57 | 41% |
 
 ---
+
+## Temporibus autem
 
 Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus.
 

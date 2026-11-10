@@ -4,6 +4,6 @@ import Base from '../../layouts/Base.astro'
 import { sections } from '../../lib/posts'
 ---
 
-<Base title="diary" description={sections.diary.intro} backdrop={sections.diary.backdrop}>
+<Base title="diary" description={sections.diary.intro} backdrop={sections.diary.backdrop} image="/og/diary.png">
   <EntryList section="diary" />
 </Base>

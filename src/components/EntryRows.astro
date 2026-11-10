@@ -1,0 +1,164 @@
+---
+// Entries grouped by year, newest first. Each row is date, title and summary; with
+// `showSection`, the row also says whether it's a post or a diary entry (tag pages mix
+// the two).
+import { entryUrl, formatShortDate, isoDate, sections, type Entry } from '../lib/posts'
+
+interface Props {
+  entries: Entry[]
+  showSection?: boolean
+}
+
+const { entries, showSection = false } = Astro.props
+
+const years = new Map<number, Entry[]>()
+for (const entry of entries) {
+  const year = entry.data.date.getUTCFullYear()
+  years.set(year, [...(years.get(year) ?? []), entry])
+}
+---
+
+{
+  entries.length === 0 ? (
+    <p class="empty">Nothing here yet.</p>
+  ) : (
+    [...years].map(([year, list]) => (
+      <section class="year" aria-labelledby={`y${year}`}>
+        <h2 class="yearLabel" id={`y${year}`}>
+          {year}
+        </h2>
+        <ol class="entries">
+          {list.map((entry) => (
+            <li>
+              <a href={entryUrl(entry)} class="row">
+                <span class="when">
+                  <time class="date" datetime={isoDate(entry.data.date)}>
+                    {formatShortDate(entry.data.date)}
+                  </time>
+                  {showSection && <span class="section">{sections[entry.collection].label}</span>}
+                </span>
+                <span class="text">
+                  <span class="title">
+                    {entry.data.title}
+                    {entry.data.draft && <span class="draft">draft</span>}
+                  </span>
+                  <span class="summary">{entry.data.summary}</span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))
+  )
+}
+
+<style>
+  .empty {
+    max-width: var(--measure);
+    margin-top: 1rem;
+    color: var(--fg-muted);
+  }
+
+  .year {
+    margin-top: 4rem;
+  }
+
+  .yearLabel {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-regular);
+    color: var(--fg-muted);
+  }
+
+  .entries {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    /* Rows reach a little past the column so the hover fill has room around the text. */
+    margin-inline: -1rem;
+  }
+
+  /* Date in a narrow left column, title and summary beside it. Hover is a flat fill and
+     the title nudging right, like the contact card's rows on the main site. */
+  .row {
+    display: grid;
+    grid-template-columns: 4.5rem 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+
+  .row:hover,
+  .row:focus-visible {
+    background: var(--code-bg);
+  }
+
+  .when {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding-top: 0.35em;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-regular);
+    color: var(--fg-muted);
+  }
+
+  .date {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .section {
+    font-size: var(--text-xs);
+  }
+
+  .text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    max-width: var(--measure);
+  }
+
+  .title {
+    font-size: var(--text-lg);
+    line-height: 1.25;
+    transition: translate var(--dur) var(--ease-out);
+  }
+
+  .row:hover .title,
+  .row:focus-visible .title {
+    translate: 0.4rem 0;
+  }
+
+  .summary {
+    color: var(--fg-muted);
+  }
+
+  .draft {
+    margin-left: 0.6em;
+    padding: 0.1em 0.45em;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-regular);
+    vertical-align: middle;
+    background: var(--surface);
+    color: var(--on-surface);
+  }
+
+  @media (max-width: 1023px), (max-height: 500px) {
+    .row {
+      grid-template-columns: 1fr;
+      gap: 0.25rem;
+    }
+
+    .when {
+      flex-direction: row;
+      gap: 0.75rem;
+      padding-top: 0;
+    }
+
+    .section {
+      font-size: inherit;
+    }
+  }
+</style>

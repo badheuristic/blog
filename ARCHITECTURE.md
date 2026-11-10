@@ -16,6 +16,9 @@ of a long post (no mascot, no section stepping, native scroll).
 - **Sätteri**, Astro 7's markdown processor, with one plugin of ours (`lib/embeds.ts`)
   for captions, demos and diagrams. (Remark plugins would need the old unified
   pipeline installed; we don't use any.)
+- **Satori** and **resvg** (its WebAssembly build) draw the link preview images at build
+  time (`lib/og.ts`). Satori can't read woff2, so the card uses @fontsource's woff files
+  instead of the site's subsets.
 - **Sharp** optimizes images where it loads. On NixOS it can't find `libstdc++`, so
   `astro.config.mjs` falls back to serving images as they are; a normal build machine
   gets optimized images.
@@ -63,13 +66,26 @@ in fields. Section names, paths and intros live in `src/lib/posts.ts`.
 
 ## Pages
 
-- **List** (`/`, `/diary/`): `posts / diary` switch (the current one at full contrast,
-  like the theme switch), a line about the section, then entries grouped by year, newest
-  first. Each row is date, title and summary. Hover fills the row with `--code-bg` and
-  nudges the title right. (`components/EntryList.astro`)
+- **List** (`/`, `/diary/`): `posts / diary / tags` switch (the current one at full
+  contrast, like the theme switch), a line about the section, then entries grouped by
+  year, newest first. Each row is date, title and summary. Hover fills the row with
+  `--code-bg` and nudges the title right. (`components/EntryList.astro`, rows in
+  `EntryRows.astro`)
 - **Entry**: `← posts` or `← diary`, title, meta line (date, reading time, updated date)
-  with square separators, tags, the text, then links to the older and newer entries in
-  the same section. (`layouts/Entry.astro`)
+  with square separators, tags (each links to its tag page), contents for long entries,
+  the text, then links to the older and newer entries in the same section.
+  (`layouts/Entry.astro`)
+- **Contents** (`components/Toc.astro`): shown once an entry has 3 or more `##`/`###`
+  headings. On wide screens it's fixed in the empty top left under the logo, and the
+  heading being read gets a small square and slides right; on narrow screens it's a
+  plain list above the text.
+- **Tags**: `/tags/` lists every tag, most used first, with counts; `/tags/<tag>/` lists
+  the posts and diary entries that carry it (rows say which section). Backdrop `tags`.
+  Tags only on drafts get no page in the build.
+- **Link previews**: `/og/posts.png`, `/og/diary.png` (lists and tag pages) and
+  `/og/<section>/<file name>.png` per entry, 1200×630 PNGs in the light theme: logo,
+  title, date and section, the section's word faint at the bottom left, a few squares.
+  (`pages/og/[...path].png.ts`, `lib/og.ts`)
 - **RSS** per section and a sitemap (`@astrojs/sitemap`).
 
 ## Posts
@@ -147,7 +163,8 @@ Each step leaves a working blog.
 3. ✅ **Rich posts.** Images with captions, embedded interactive demos (the hub location
    simulation from `../blogpost/demo`), grayscale diagrams (the architecture diagram
    from `../blogpost`, redrawn). See Posts above.
-4. **Extras.** Tag pages, link previews (Open Graph images), a table of contents for long
+
+4. ✅ **Extras.** Tag pages, link previews (Open Graph images), a table of contents for long
    posts.
 5. **Polish and deploy.** Accessibility, performance, the real URLs in `src/config.ts`,
    and linking it from the main site's header.

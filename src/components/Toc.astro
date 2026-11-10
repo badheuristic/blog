@@ -1,0 +1,150 @@
+---
+// Contents for a long entry. On wide screens it's fixed in the empty top left, under the
+// logo, and the heading being read is marked with a small square. On narrow screens it
+// sits above the text as a plain list.
+import type { MarkdownHeading } from 'astro'
+
+interface Props {
+  headings: MarkdownHeading[]
+}
+
+/** Shown once an entry has this many headings. */
+const MIN_HEADINGS = 3
+
+const headings = Astro.props.headings.filter((h) => (h.depth === 2 || h.depth === 3) && h.slug !== 'footnote-label')
+---
+
+{
+  headings.length >= MIN_HEADINGS && (
+    <nav class="toc" aria-label="Contents">
+      <p class="label">contents</p>
+      <ol class="list">
+        {headings.map((h) => (
+          <li class:list={['item', { sub: h.depth === 3 }]}>
+            <a href={`#${h.slug}`} class="link" data-toc={h.slug}>
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}
+
+<script>
+  // Mark the heading being read: the last one above a line a third of the way down.
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-toc]')]
+  const targets = links.map((link) => document.getElementById(link.dataset.toc!))
+
+  let frame = 0
+  const update = () => {
+    frame = 0
+    const line = innerHeight / 3
+    let current = -1
+    targets.forEach((target, i) => {
+      if (target && target.getBoundingClientRect().top < line) current = i
+    })
+    links.forEach((link, i) => {
+      if (i === current) link.setAttribute('aria-current', 'location')
+      else link.removeAttribute('aria-current')
+    })
+  }
+
+  if (links.length) {
+    addEventListener('scroll', () => (frame ||= requestAnimationFrame(update)), { passive: true })
+    addEventListener('resize', update)
+    update()
+  }
+</script>
+
+<style>
+  .toc {
+    position: fixed;
+    top: calc(var(--gutter) * 2 + 4rem);
+    left: var(--gutter);
+    z-index: var(--z-content);
+    width: calc(var(--col-start) - var(--gutter) * 3);
+    max-width: 18rem;
+    /* Stays clear of the backdrop word at the bottom left. */
+    max-height: calc(100svh - var(--gutter) * 3 - 4rem - var(--zone-title-h));
+    overflow-y: auto;
+    scrollbar-width: none;
+    font-size: var(--text-sm);
+  }
+
+  .label {
+    margin-bottom: 0.75rem;
+    font-weight: var(--weight-regular);
+    color: var(--fg-muted);
+  }
+
+  .list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .sub {
+    padding-left: 1rem;
+  }
+
+  /* The square slides in from the left and the text follows it, like a row's nudge. */
+  .link {
+    position: relative;
+    display: inline-block;
+    line-height: 1.35;
+    color: var(--fg-muted);
+    transition:
+      color var(--dur-fast) var(--ease-out),
+      translate var(--dur) var(--ease-out);
+  }
+
+  .link::before {
+    content: '';
+    position: absolute;
+    top: 0.5em;
+    left: -0.9rem;
+    width: 0.3rem;
+    height: 0.3rem;
+    background: var(--fg);
+    opacity: 0;
+    translate: -0.4rem 0;
+    transition:
+      opacity var(--dur-fast) var(--ease-out),
+      translate var(--dur) var(--ease-out);
+  }
+
+  .link:hover {
+    color: var(--fg);
+  }
+
+  .link[aria-current] {
+    color: var(--fg);
+    translate: 0.9rem 0;
+  }
+
+  .link[aria-current]::before {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  @media (max-width: 1023px), (max-height: 500px) {
+    .toc {
+      position: static;
+      width: auto;
+      max-width: var(--measure);
+      max-height: none;
+      margin-bottom: 3rem;
+    }
+
+    .link[aria-current] {
+      color: var(--fg-muted);
+      translate: none;
+    }
+
+    .link[aria-current]::before {
+      opacity: 0;
+    }
+  }
+</style>

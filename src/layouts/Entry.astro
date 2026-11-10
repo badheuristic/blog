@@ -2,10 +2,11 @@
 // One post or diary entry: back link, title, meta line, tags, the text, then the older
 // and newer entries in the same section.
 import { render } from 'astro:content'
-import { entryUrl, formatDate, isoDate, readingTime, sections, type Entry } from '../lib/posts'
+import { entryUrl, formatDate, isoDate, readingTime, sections, tagUrl, type Entry } from '../lib/posts'
 import '../styles/prose.css'
 import DemoFrames from '../components/DemoFrames.astro'
 import Diagrams from '../components/Diagrams.astro'
+import Toc from '../components/Toc.astro'
 import Base from './Base.astro'
 
 interface Props {
@@ -16,11 +17,11 @@ interface Props {
 
 const { entry, newer, older } = Astro.props
 const section = sections[entry.collection]
-const { Content } = await render(entry)
+const { Content, headings } = await render(entry)
 const { title, summary, date, updated, tags, draft } = entry.data
 ---
 
-<Base title={title} description={summary} backdrop={section.backdrop} article>
+<Base title={title} description={summary} backdrop={section.backdrop} image={`/og/${entry.collection}/${entry.id}.png`} article>
   <article>
     <header class="head">
       <a href={section.path} class="back"><span aria-hidden="true">←</span> {section.label}</a>
@@ -45,12 +46,18 @@ const { title, summary, date, updated, tags, draft } = entry.data
         tags.length > 0 && (
           <ul class="tags" aria-label="Tags">
             {tags.map((tag) => (
-              <li class="tag">{tag}</li>
+              <li>
+                <a href={tagUrl(tag)} class="tag">
+                  {tag}
+                </a>
+              </li>
             ))}
           </ul>
         )
       }
     </header>
+
+    <Toc headings={headings} />
 
     <div class="prose">
       <Diagrams><Content /></Diagrams>
@@ -149,11 +156,20 @@ const { title, summary, date, updated, tags, draft } = entry.data
   }
 
   .tag {
+    display: block;
     padding: 0.15em 0.6em;
     font-size: var(--text-xs);
     font-weight: var(--weight-regular);
     background: var(--code-bg);
     color: var(--fg-muted);
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+
+  .tag:hover {
+    background: var(--surface);
+    color: var(--on-surface);
   }
 
   .pager {

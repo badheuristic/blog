@@ -1,0 +1,53 @@
+---
+// One tag: every post and diary entry that carries it, newest first.
+import EntryRows from '../../components/EntryRows.astro'
+import Base from '../../layouts/Base.astro'
+import { getTags, type Entry } from '../../lib/posts'
+
+export async function getStaticPaths() {
+  const tags = await getTags()
+  return tags.map(({ tag, slug, entries }) => ({ params: { tag: slug }, props: { tag, entries } }))
+}
+
+interface Props {
+  tag: string
+  entries: Entry[]
+}
+
+const { tag, entries } = Astro.props
+const count = entries.length === 1 ? 'one entry' : `${entries.length} entries`
+---
+
+<Base title={tag} description={`Posts and diary entries tagged ${tag}.`} backdrop="tags">
+  <a href="/tags/" class="back"><span aria-hidden="true">←</span> tags</a>
+  <h1 class="title">{tag}</h1>
+  <p class="intro">{count}</p>
+  <EntryRows entries={entries} showSection />
+</Base>
+
+<style>
+  .back {
+    display: inline-block;
+    margin-bottom: 2rem;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-regular);
+    color: var(--fg-muted);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .back:hover {
+    color: var(--fg);
+  }
+
+  .title {
+    font-size: var(--text-title);
+    font-weight: var(--weight-light);
+    letter-spacing: var(--tracking-display);
+    line-height: 0.95;
+  }
+
+  .intro {
+    margin-top: 1rem;
+    color: var(--fg-muted);
+  }
+</style>

@@ -46,3 +46,30 @@ export const formatDate = (date: Date) => longDate.format(date)
 export const formatShortDate = (date: Date) => shortDate.format(date)
 /** For <time datetime>. */
 export const isoDate = (date: Date) => date.toISOString().slice(0, 10)
+
+/** A tag as it appears in a URL: lowercase, spaces as dashes. */
+export const tagSlug = (tag: string) =>
+  tag
+    .toLowerCase()
+    .trim()
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
+    .replace(/^-|-$/g, '')
+
+/** Where a tag's page is. */
+export const tagUrl = (tag: string) => `/tags/${tagSlug(tag)}/`
+
+/** Every tag in both sections, with its entries (newest first), most used first. */
+export async function getTags(): Promise<{ tag: string; slug: string; entries: Entry[] }[]> {
+  const all = [...(await getEntries('posts')), ...(await getEntries('diary'))].sort(
+    (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+  )
+  const tags = new Map<string, { tag: string; slug: string; entries: Entry[] }>()
+  for (const entry of all) {
+    for (const tag of entry.data.tags) {
+      const slug = tagSlug(tag)
+      if (!tags.has(slug)) tags.set(slug, { tag, slug, entries: [] })
+      tags.get(slug)!.entries.push(entry)
+    }
+  }
+  return [...tags.values()].sort((a, b) => b.entries.length - a.entries.length || a.tag.localeCompare(b.tag))
+}
