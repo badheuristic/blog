@@ -186,8 +186,32 @@
   color: var(--fg);
 }
 
-/* Diagrams (```diagram): inline SVG, filled from the diagram tokens. Narrow screens
-   scroll it sideways rather than shrink the text past reading. */
+/* Diagrams (```diagram): inline SVG, filled from the diagram tokens. Below 40rem of room,
+   a diagram with a narrow layout (<name>.narrow.svg) switches to it; one without scrolls
+   sideways rather than shrink the text past reading. */
+.prose .diagram {
+  container-type: inline-size;
+}
+
+.prose .diagramNarrow {
+  display: none;
+}
+
+.prose .diagram .diagramNarrow svg {
+  min-width: 0;
+  max-width: 30rem;
+}
+
+@container (max-width: 40rem) {
+  .prose .diagramWide {
+    display: none;
+  }
+
+  .prose .diagramNarrow {
+    display: block;
+  }
+}
+
 .prose .diagramScroll {
   overflow-x: auto;
   scrollbar-width: none;

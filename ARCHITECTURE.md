@@ -147,7 +147,13 @@ caption: Where it's heading.
   (`components/Diagrams.astro`), since Astro caches rendered markdown by the post's own
   text and wouldn't notice an edited SVG; in dev an edit reloads the browser.
 - **Wide**: demos and diagrams reach left past the text column (up to 64rem), keeping
-  their right edge on it. Diagrams keep a 40rem minimum and scroll sideways on phones.
+  their right edge on it.
+- **Narrow layouts**: with less than 40rem of room (phones), a diagram switches to
+  `<name>.narrow.svg` when there is one: the same boxes rearranged to read at full size.
+  Without one, it keeps a 40rem minimum and scrolls sideways (the scrollbar is hidden, so
+  it can look cut off; give every diagram a narrow layout).
+- **Generators**: diagrams are drawn by scripts in `scripts/diagrams/`, which write both
+  layouts (`python3 scripts/diagrams/hub-architecture.py`).
 
 Post typography (`src/styles/prose.css`): light headings set by size, `strong` only goes
 up to Medium, links get a faint underline that darkens on hover, bullets are small

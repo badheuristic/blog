@@ -1,18 +1,25 @@
 ---
-// Wraps a rendered post and puts each diagram's SVG into the placeholder lib/embeds.ts
-// left for it. Read from disk on every render (paths from the project root, where astro
-// runs), so in dev a changed diagram shows on the next load; lib/embedFiles.ts reloads
-// the browser when one changes.
-import { readFileSync } from 'node:fs'
+// Inlines the SVGs behind ```diagram fences (see lib/embeds.ts) when the page renders, so
+// an edited diagram shows up without touching the post. A diagram can come with a
+// <name>.narrow.svg, a layout for phones; both are inlined and prose.css shows the one
+// that fits.
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-const svg = (src: string) =>
-  readFileSync(join(process.cwd(), 'src/content/diagrams', `${src}.svg`), 'utf8').replace(/<\?xml[^>]*>\s*/, '')
+const DIR = join(process.cwd(), 'src/content/diagrams')
+const read = (file: string) => readFileSync(join(DIR, file), 'utf8').replace(/<\?xml[^>]*>\s*/, '')
+
+function diagram(src: string) {
+  const wide = read(`${src}.svg`)
+  if (!existsSync(join(DIR, `${src}.narrow.svg`))) return `<div class="diagramScroll">${wide}</div>`
+  // Only one of the two is ever visible, so screen readers hear it once.
+  return `<div class="diagramScroll diagramWide">${wide}</div><div class="diagramNarrow">${read(`${src}.narrow.svg`)}</div>`
+}
 
 const html = await Astro.slots.render('default')
 const withDiagrams = html.replace(
   /<div class="diagramScroll" data-diagram="([\w-]+)"><\/div>/g,
-  (_, src: string) => `<div class="diagramScroll">${svg(src)}</div>`,
+  (_, src: string) => diagram(src),
 )
 ---
 

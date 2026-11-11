@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 1054" role="img" aria-label="Architecture: location sources feed a readings table; a validation job turns readings into hub assessments, which are auto-updated, reviewed by people, or sent back for a new reading; a correction service writes the hubs table and a location history, which feed a dashboard and alerts.">
+<g class="process"><rect x="12" y="20" width="162" height="59"/><text x="93" y="46" class="t">staff submissions</text><text x="93" y="63" class="s">app, api, otp login</text></g>
+<g class="process"><rect x="186" y="20" width="162" height="59"/><text x="267" y="46" class="t">phone heartbeat</text><text x="267" y="63" class="s">hub phone gps</text></g>
+<g class="process"><rect x="12" y="89" width="162" height="59"/><text x="93" y="115" class="t">cell-tower fixes</text><text x="93" y="132" class="s">particle api</text></g>
+<g class="process"><rect x="186" y="89" width="162" height="59"/><text x="267" y="115" class="t">photos</text><text x="267" y="132" class="s">object storage</text></g>
+<g class="store"><rect x="12" y="173" width="336" height="59"/><text x="180" y="199" class="t">location readings table</text><text x="180" y="216" class="s">source, coordinates, accuracy, time, device, app version</text></g>
+<g class="process"><rect x="12" y="282" width="140" height="59"/><text x="82" y="308" class="t">versioned rules</text><text x="82" y="325" class="s">tested in CI</text></g>
+<g class="process"><rect x="176" y="282" width="172" height="59"/><text x="262" y="308" class="t">validation job</text><text x="262" y="325" class="s">on new reading or schedule</text></g>
+<g class="store"><rect x="70" y="366" width="220" height="59"/><text x="180" y="392" class="t">hub assessments</text><text x="180" y="409" class="s">bucket, evidence, rules version</text></g>
+<g class="process"><rect x="12" y="450" width="162" height="59"/><text x="93" y="476" class="t">auto-update</text><text x="93" y="493" class="s">two signals agree</text></g>
+<g class="act"><rect x="186" y="450" width="162" height="59"/><text x="267" y="476" class="t">request new reading</text><text x="267" y="493" class="s">notify field staff</text></g>
+<g class="act"><rect x="99" y="548" width="162" height="59"/><text x="180" y="574" class="t">review page</text><text x="180" y="591" class="s">confirm or drop a pin</text></g>
+<g class="store"><rect x="99" y="632" width="162" height="59"/><text x="180" y="658" class="t">review records</text><text x="180" y="675" class="s">pins kept separate</text></g>
+<g class="process"><rect x="12" y="716" width="336" height="59"/><text x="180" y="742" class="t">correction service</text><text x="180" y="759" class="s">compare-and-set, batch approval, undo</text></g>
+<g class="store"><rect x="12" y="800" width="162" height="59"/><text x="93" y="826" class="t">hubs table</text><text x="93" y="843" class="s">live coordinates</text></g>
+<g class="store"><rect x="186" y="800" width="162" height="59"/><text x="267" y="826" class="t">location history</text><text x="267" y="843" class="s">old, new, why, who</text></g>
+<g class="process"><rect x="12" y="884" width="336" height="59"/><text x="180" y="910" class="t">dashboard and alerts</text><text x="180" y="927" class="s">progress, confidence, failed job</text></g>
+<path class="arrow" d="M180 148L180.0 173.0M177.1 167.7L180.0 173.0L182.9 167.7"/>
+<path class="arrow" d="M152 311L176.0 311.0M170.7 313.9L176.0 311.0L170.7 308.1"/>
+<path class="arrow" d="M262 341L262.0 366.0M259.1 360.7L262.0 366.0L264.9 360.7"/>
+<path class="arrow" d="M140 425L93.0 450.0M96.3 445.0L93.0 450.0L99.0 450.1"/>
+<path class="arrow" d="M220 425L267.0 450.0M261.0 450.1L267.0 450.0L263.7 445.0"/>
+<path class="arrow" d="M180 425L180.0 548.0M177.1 542.7L180.0 548.0L182.9 542.7"/>
+<path class="arrow" d="M180 607L180.0 632.0M177.1 626.7L180.0 632.0L182.9 626.7"/>
+<path class="arrow" d="M40 509L40.0 716.0M37.1 710.7L40.0 716.0L42.9 710.7"/>
+<path class="arrow" d="M180 691L180.0 716.0M177.1 710.7L180.0 716.0L182.9 710.7"/>
+<path class="arrow" d="M93 775L93.0 800.0M90.1 794.7L93.0 800.0L95.9 794.7"/>
+<path class="arrow" d="M267 775L267.0 800.0M264.1 794.7L267.0 800.0L269.9 794.7"/>
+<path class="arrow" d="M93 859L93.0 884.0M90.1 878.7L93.0 884.0L95.9 878.7"/>
+<path class="arrow" d="M267 859L267.0 884.0M264.1 878.7L267.0 884.0L269.9 878.7"/>
+<text x="348" y="274" class="note" style="text-anchor:end">*re-checks on new data</text>
+<text x="348" y="524" class="note" style="text-anchor:end">new submission</text>
+<text x="348" y="538" class="note" style="text-anchor:end">feeds readings</text>
+<g class="store"><rect x="12" y="969" width="18" height="18"/></g><text x="40" y="983" class="legend">stored in the database</text>
+<g class="act"><rect x="12" y="995" width="18" height="18"/></g><text x="40" y="1009" class="legend">people act</text>
+<g class="process"><rect x="12" y="1021" width="18" height="18"/></g><text x="40" y="1035" class="legend">source or process</text>
+</svg>
